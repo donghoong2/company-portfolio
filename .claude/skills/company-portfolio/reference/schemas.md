@@ -27,7 +27,8 @@
     "corner": "rounded",        // rounded | sharp | pill
     "coverStyle": "split",      // split(좌측 컬러 패널) | solid(전면 컬러) | minimal(흰 배경+세로 바)
     "accentShape": "bar",       // bar | dot | none (제목 위 장식)
-    "sectionStyle": "solid"     // solid(컬러 배경) | light(surface 배경)
+    "sectionStyle": "solid",    // solid(컬러 배경) | light(surface 배경)
+    "markColor": "primary"      // primary | accent (제목 위 장식바·표지 라벨 색. accent가 밝은 브랜드 포인트일 때)
   },
   "logo": null,                 // 사용자가 넣은 경우만: "logo.png" (companies/<slug>/ 기준)
   "tone": "간결하고 친근한 문장, 큰 숫자 강조, 여백 넉넉",
@@ -54,7 +55,7 @@
 | `cover` | `headline`, `subhead`, `label?` | headline 2줄 이내 |
 | `profile` | `name`, `role`, `intro`, `keywords[]`, `info[{label,value}]`, `competencies[{title,desc}]` | intro 3~4문장, keywords ≤5, competencies 3 |
 | `fit` | `items[{value, desc, evidence}]` | 2~4개, evidence 2문장 이내 |
-| `requirements` | `rows[{kind:"필수"\|"우대", req, evidence, project}]` | ≤7행 |
+| `requirements` | `rows[{kind:"필수"\|"우대"\|"자격"\|"역량", req, evidence, project}]` | ≤7행. 채용공고가 없으면 자격(공식 요건)/역량(추정 기준). "추정" 같은 내부 표기는 덱에 노출하지 않는다 |
 | `section` | `no`, `title`, `subtitle`, `tags[]` | |
 | `project` | `summary`, `period`, `team`, `role`, `stack[]`, `metrics[{value,label}]`, `contributions[]`, `fitTags[]`, `image?` | metrics ≤3 (value 8자 이내), contributions 3~5 |
 | `star` | `context`, `problem`, `action[]`, `result[]`, `fitTag` | 각 열 bullet 2~4개 |

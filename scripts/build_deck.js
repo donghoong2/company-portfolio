@@ -146,7 +146,7 @@ function pills(slide, items, x, y, maxW, o = {}) {
   return cy + h;
 }
 
-function accentMark(slide, x, y, color = C.primary) {
+function accentMark(slide, x, y, color = style.markColor === "accent" ? C.accent : C.primary) {
   if (style.accentShape === "bar") slide.addShape(pptx.ShapeType.rect, { x, y, w: 0.5, h: 0.07, fill: { color }, line: { type: "none" } });
   else if (style.accentShape === "dot") slide.addShape(pptx.ShapeType.ellipse, { x, y: y - 0.03, w: 0.14, h: 0.14, fill: { color }, line: { type: "none" } });
 }
@@ -180,7 +180,7 @@ R.cover = (s) => {
   const meta = deck.meta || {};
   const label = s.label || `PORTFOLIO · ${meta.role || ""}`;
   let x = M + 0.2, w = W - 2 * M - 0.4, fg = C.text, sub = C.muted, hl = C.primary;
-  if (style.coverStyle === "solid") { fg = C.onPrimary; sub = C.onPrimary; hl = C.onPrimary; }
+  if (style.coverStyle === "solid") { fg = C.onPrimary; sub = C.onPrimary; hl = style.markColor === "accent" ? C.accent : C.onPrimary; }
   if (style.coverStyle === "split") {
     slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: W * 0.36, h: H, fill: { color: C.primary }, line: { type: "none" } });
     txt(slide, brand.company || "", 0.6, H - 1.3, W * 0.36 - 1.0, 0.6, { head: true, bold: true, size: 22, color: C.onPrimary });
@@ -212,15 +212,15 @@ R.profile = (s) => {
   for (const it of s.info || []) {
     txt(slide, it.label, rx, y, 1.3, 0.35, { size: 11, color: C.muted, bold: true });
     txt(slide, it.value, rx + 1.3, y, rw - 1.3, 0.35, { size: fit(it.value, rw - 1.3, 0.35, 12, 9) });
-    y += 0.4;
+    y += 0.36;
   }
-  y += 0.2;
+  y += 0.15;
   const comps = s.competencies || [];
   const ch = comps.length ? Math.min(1.25, (H - 0.8 - y) / comps.length - 0.12) : 0;
   for (const c of comps) {
     box(slide, rx, y, rw, ch, C.surface);
-    txt(slide, c.title, rx + 0.2, y + 0.1, rw - 0.4, 0.35, { bold: true, size: 13, color: C.primary });
-    txt(slide, c.desc, rx + 0.2, y + 0.45, rw - 0.4, ch - 0.5, { size: fit(c.desc, rw - 0.4, ch - 0.5, 11, 8.5) });
+    txt(slide, c.title, rx + 0.2, y + 0.06, rw - 0.4, 0.32, { bold: true, size: 13, color: C.primary });
+    txt(slide, c.desc, rx + 0.2, y + 0.38, rw - 0.4, ch - 0.42, { size: fit(c.desc, rw - 0.4, ch - 0.42, 11.5, 10, 1.3), lineSpacing: 1.05 });
     y += ch + 0.12;
   }
 };
@@ -250,7 +250,7 @@ R.requirements = (s) => {
     text: t, options: { bold: true, color: C.onPrimary, fill: { color: C.primary }, fontFace: F.head, fontSize: 11, align: "center", valign: "middle" },
   }));
   const rows = (s.rows || []).map((r) => [
-    { text: r.kind || "", options: { bold: true, align: "center", color: r.kind === "필수" ? C.primary : C.accent } },
+    { text: r.kind || "", options: { bold: true, align: "center", color: ["필수", "공식", "자격"].includes(r.kind) ? C.primary : (style.markColor === "accent" ? C.secondary : C.accent) } },
     { text: r.req || "" },
     { text: r.evidence || "" },
     { text: r.project || "", options: { color: C.muted } },
@@ -390,7 +390,7 @@ R.skills = (s) => {
   const rows = Math.ceil(groups.length / cols);
   const cw = (W - 2 * M - gap * (cols - 1)) / cols;
   const maxH = (H - 0.8 - top - gap * (rows - 1)) / Math.max(rows, 1);
-  const pillSize = 11.5, pillH = 0.38;
+  let pillSize = 11.5, pillH = 0.38;
   const pillRows = (items) => {
     let r = 1, cx = 0;
     for (const it of items || []) {
@@ -400,7 +400,9 @@ R.skills = (s) => {
     }
     return r;
   };
-  const chh = Math.min(maxH, Math.max(...groups.map((g) => 0.75 + pillRows(g.items) * (pillH + 0.08))) + 0.15);
+  const needH = () => Math.max(...groups.map((g) => 0.75 + pillRows(g.items) * (pillH + 0.08))) + 0.15;
+  while (needH() > maxH && pillSize > 9) { pillSize -= 0.5; pillH = Math.max(0.3, pillH - 0.02); }
+  const chh = Math.min(maxH, needH());
   groups.forEach((g, i) => {
     const x = M + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (chh + gap);
     box(slide, x, y, cw, chh, C.surface);

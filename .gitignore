@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+
+# 개인 데이터 — 공개하지 않음
+profile/*
+!profile/.gitkeep
+companies/*
+!companies/_sample/
+output/*
+!output/_sample_portfolio.pptx
+
+# 로컬 상태
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

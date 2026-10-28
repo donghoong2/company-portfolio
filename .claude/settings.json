@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Bash(python3 scripts/notion_export.py:*)",
+      "Bash(node scripts/build_deck.js:*)",
+      "Bash(bash scripts/preview.sh:*)",
+      "Bash(fc-list:*)",
+      "Bash(curl -sL:*)",
+      "Bash(file:*)"
+    ]
+  }
+}

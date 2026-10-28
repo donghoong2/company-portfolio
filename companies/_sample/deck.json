@@ -1,0 +1,49 @@
+{
+  "meta": { "author": "이동형", "role": "Backend Engineer", "contact": "github.com/donghoong2", "date": "2026.10", "title": "이동형 포트폴리오" },
+  "slides": [
+    { "type": "cover", "headline": "서류 한 장이 신뢰할 수 있는 데이터가 되기까지,\n끝까지 책임지는 백엔드 개발자", "subhead": "AI 데이터 파이프라인 · Kubernetes 플랫폼 · Spring Boot 백엔드" },
+    { "type": "profile", "label": "About", "title": "약속을 끝까지 책임지는 Backend 개발자", "name": "이동형", "role": "Backend Engineer",
+      "intro": "맡은 일을 신뢰할 수 있는 결과로 완성하는 것이 약속이라고 생각합니다. 기능 구현을 넘어 구조와 안정성까지 고민하며, 사용자에게 실제로 도움이 되는 기능을 안정적으로 구현해 왔습니다.",
+      "keywords": ["책임감", "데이터 정합성", "측정 기반 개선", "GitOps"],
+      "info": [{ "label": "학력", "value": "서강대학교 국어국문·컴퓨터공학 (2021~)" }, { "label": "교육", "value": "AI·SW마에스트로 17기, 멋쟁이사자처럼 13기" }, { "label": "GitHub", "value": "github.com/donghoong2" }],
+      "competencies": [{ "title": "Backend Development", "desc": "Spring Boot REST API, OAuth2/JWT, JPA, 실시간 채팅 및 비동기 처리" }, { "title": "Cloud & DevOps", "desc": "AWS, Kubernetes, Argo CD GitOps, Prometheus·Grafana 관측성" }, { "title": "AI & Data Engineering", "desc": "OCR·VLM 문서 분석, 약관 청킹·임베딩, pgvector 하이브리드 검색" }] },
+    { "type": "fit", "label": "Why Me", "title": "인재상 × 나의 경험", "items": [
+      { "value": "주도성", "desc": "문제를 스스로 정의하고 끝까지 해결", "evidence": "청구가 '처리 중'에 조용히 멈추는 문제를 직접 발견하고 청구 단위 fan-in과 재업로드 통지로 무음 정지 경로를 제거" },
+      { "value": "데이터 기반", "desc": "측정하고 개선한다", "evidence": "약관 ETL을 단계별로 분리·측정해 병목을 찾고 VLM 동시 호출로 296쪽 문서 처리 시간 −42.2%" },
+      { "value": "신뢰", "desc": "안정적인 시스템", "evidence": "DB·Redis dual-write를 트랜잭셔널 아웃박스로 해결, k6 100 RPS 10분 실패율 0%" },
+      { "value": "협업", "desc": "함께 성장", "evidence": "팀 청킹 파이프라인의 초기 구조와 스키마를 설계해 팀 기반으로 채택" } ] },
+    { "type": "requirements", "label": "Job Fit", "title": "지원자격·우대사항 매칭", "rows": [
+      { "kind": "필수", "req": "Java/Spring 기반 서버 개발 경험", "evidence": "Spring Boot·Security·JPA로 OAuth2/JWT 인증, 실시간 채팅(STOMP+Redis) 구현", "project": "바른보상, 화리보" },
+      { "kind": "필수", "req": "RDBMS 설계 및 활용", "evidence": "PostgreSQL 청크 스키마·인덱스(tsvector, trigram, halfvec) 설계", "project": "바른보상" },
+      { "kind": "우대", "req": "Kubernetes 운영 경험", "evidence": "kubeadm 클러스터 구축, Argo CD GitOps 전환(재시작 0회)", "project": "바른보상" },
+      { "kind": "우대", "req": "대용량 트래픽/성능 개선", "evidence": "k6 100 RPS 부하테스트, 포토리뷰 조회 성능 개선", "project": "바른보상, 화리보" } ] },
+    { "type": "section", "no": "01", "title": "바른보상", "subtitle": "AI 기반 보험금 청구 지원 및 손해사정사 매칭 플랫폼", "tags": ["SW마에스트로 17기", "2026.05 ~ 2026.11"] },
+    { "type": "project", "label": "Project 01", "title": "바른보상 — 서류가 AI 리포트의 근거가 되기까지", "fitTags": ["주도성", "데이터 기반"],
+      "summary": "사용자가 올린 진단서·보험증권을 OCR·PII 마스킹·약관 검색으로 처리해 AI 보상 분석 초안을 만들고, 손해사정사가 검수하는 B2B2C 플랫폼입니다.",
+      "period": "2026.05 ~ 2026.11", "team": "FE 1 · BE 2", "role": "백엔드·OCR/약관 ETL 파이프라인, K8s·GitOps, 관측성",
+      "stack": ["Java", "Python", "Spring Boot", "PostgreSQL", "pgvector", "Redis", "SQS", "Kubernetes", "Argo CD", "k6"],
+      "metrics": [{ "value": "0→9/9", "label": "OCR 실환경 E2E 저장 성공" }, { "value": "−42.2%", "label": "약관 ETL 처리 시간" }, { "value": "0.894", "label": "RAG Recall@5" }],
+      "contributions": ["SQS 기반 13단계 OCR 파이프라인 (surya + VLM 하이브리드)", "정규식 + 한국어 NER 기반 PII 마스킹, fail-closed 잔류 검사", "약관 청킹·임베딩 파이프라인 초기 구조 설계", "kubeadm 클러스터 + Argo CD GitOps 전환"] },
+    { "type": "star", "label": "Troubleshooting", "title": "약관 ETL 적재가 250일 걸리던 문제", "fitTag": "데이터 기반",
+      "context": "전체 약관 적재에 추정 250일 소요", "problem": "어느 단계가 병목인지 측정 없이 추측만 존재",
+      "action": ["추출·파싱·임베딩 단계를 분리하고 단계별 시간 측정", "VLM 호출이 병목임을 확인 후 동시 호출 도입", "296쪽 기준 문서로 벤치마크 고정"],
+      "result": ["처리 시간 52.6분 → 30.4분 (−42.2%)", "팀 청킹 파이프라인의 기반으로 채택"] },
+    { "type": "architecture", "label": "Architecture", "title": "시스템 아키텍처", "layers": [
+      { "name": "Client", "items": ["Web / App", "손해사정사 콘솔"] },
+      { "name": "Backend", "items": ["Spring Boot API", "STOMP Chat", "Auth (OAuth2/JWT)"] },
+      { "name": "Async", "items": ["Amazon SQS", "OCR Worker", "Report Worker"] },
+      { "name": "Data", "items": ["PostgreSQL + pgvector", "Redis", "S3"] },
+      { "name": "Platform", "items": ["Kubernetes", "Argo CD", "Prometheus·Grafana·Loki"] } ],
+      "caption": "SQS로 API와 AI 워커를 분리해 장애 전파를 차단" },
+    { "type": "activities", "label": "Activities", "title": "대외활동", "items": [
+      { "period": "2026.03 ~ 2026.12", "name": "AI·SW마에스트로 17기", "role": "연수생", "desc": "바른보상 프로젝트 백엔드·AI 파이프라인·인프라 담당", "fitTag": "주도성" },
+      { "period": "2025.01 ~ 2025.12", "name": "멋쟁이사자처럼 13기", "role": "백엔드 트랙", "desc": "Spring·알고리즘 스터디, 해커톤·데모데이 참여", "fitTag": "협업" },
+      { "period": "2021.10 ~ 2021.11", "name": "대학생 교육 기부단", "role": "코딩 교육 멘토", "desc": "초등학생 대상 엔트리 블록 코딩 수업 진행", "fitTag": "소통" } ] },
+    { "type": "skills", "label": "Skills", "title": "기술 스택", "groups": [
+      { "name": "Backend", "items": ["Java", "Spring Boot", "Spring Security", "JPA", "OAuth2", "JWT"] },
+      { "name": "Data", "items": ["PostgreSQL", "MySQL", "Redis", "pgvector"] },
+      { "name": "Infra", "items": ["AWS", "Docker", "Kubernetes", "Argo CD", "GitHub Actions"] },
+      { "name": "Observability", "items": ["Prometheus", "Grafana", "Loki", "Tempo", "k6"] } ] },
+    { "type": "closing", "message": "맡은 일을 신뢰할 수 있는 결과로,\n끝까지 책임지겠습니다.", "contacts": ["GitHub  github.com/donghoong2"] }
+  ]
+}

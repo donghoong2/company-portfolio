@@ -1,0 +1,7 @@
+{
+  "company": "Sample Corp",
+  "colors": { "primary": "#3182F6", "secondary": "#1B64DA", "accent": "#F04452", "background": "#FFFFFF", "surface": "#F2F4F6", "text": "#191F28", "muted": "#8B95A1", "onPrimary": "#FFFFFF", "border": "#E5E8EB" },
+  "fonts": { "heading": "Pretendard", "body": "Pretendard", "fallback": "Apple SD Gothic Neo" },
+  "style": { "corner": "rounded", "coverStyle": "split", "accentShape": "bar", "sectionStyle": "solid" },
+  "tone": "렌더러 검증용 샘플"
+}

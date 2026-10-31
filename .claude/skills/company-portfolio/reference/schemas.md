@@ -65,4 +65,6 @@
 | `image` | `path`, `caption` | |
 | `closing` | `message`, `sub?`, `contacts[]` | |
 
+최상위(선택) `derived[{value, from}]` — 사실 출처 수치로 계산한 값과 그 근거. `scripts/check_facts.py`가 `from`의 수치가 출처에 있는지 확인하고 `value`를 통과시킨다.
+
 `image`/`project.image` 경로는 프로젝트 루트 기준 (예: `companies/toss/assets/flow.png`).

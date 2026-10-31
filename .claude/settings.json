@@ -4,6 +4,7 @@
       "WebSearch",
       "WebFetch",
       "Bash(python3 scripts/notion_export.py:*)",
+      "Bash(python3 scripts/check_facts.py:*)",
       "Bash(node scripts/build_deck.js:*)",
       "Bash(bash scripts/preview.sh:*)",
       "Bash(fc-list:*)",

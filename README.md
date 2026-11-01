@@ -46,6 +46,7 @@
 |---|---|---|
 | 🔎 | **기업 조사** | 인재상·핵심가치, 채용공고(주요업무/지원자격/우대사항), 기술 스택, 최근 이슈를 출처와 함께 정리 |
 | 🎨 | **브랜드 테마** | 공식 컬러 HEX, 전용/대체 폰트, 디자인 톤을 조사해 덱 테마 토큰으로 변환. 명도 대비는 자동으로 확인 |
+| 🖼️ | **자료·이미지 수집** | 개인·팀 Notion(이미지 포함)과 팀 GitHub 저장소·위키를 모아, 실제 화면·구조도·측정 그래프를 덱에 넣는다. 본인 기여는 커밋 작성자로 확인 |
 | 🧩 | **경험 매칭** | 인재상·요건마다 가장 강한 근거를 짝짓고 `충족 / 부분 충족 / 미충족`으로 표시. 기업이 쓰는 어휘를 그대로 사용 |
 | 🙋 | **보충 질문** | 프로필에 없는 원인·전후 수치·선택 이유를 한 번에 묻고 누적. 다음 기업 덱에서도 재사용 |
 | 🛡️ | **수치 검사** | 덱의 모든 수치를 사실 출처와 대조. 출처에 없는 숫자가 하나라도 있으면 빌드하지 않음 |
@@ -65,8 +66,22 @@ npm install
 brew install --cask libreoffice && brew install poppler
 ```
 
-1. **Notion 프로필을 공개한다.** 프로필 페이지 → 공유 → 웹에 게시. 프로젝트·활동 DB와 하위 페이지까지 함께 내보낸다.
-2. **프로필 URL을 바꾼다.** `.claude/skills/company-portfolio/SKILL.md`의 "0. 준비"에 있는 URL을 내 페이지 주소로 바꾼다.
+1. **Notion 페이지를 공개한다.** 프로필 페이지(필요하면 팀 페이지도) → 공유 → 웹에 게시. DB·하위 페이지·이미지까지 함께 내보낸다.
+2. **자료 위치를 적는다.** `profile/sources.json`을 만든다. 개인 파일이라 git에 올라가지 않는다.
+   ```json
+   {
+     "notion": {
+       "profile": "https://app.notion.com/p/<내 프로필>",
+       "team": ["https://app.notion.com/p/<팀 스페이스>"]
+     },
+     "github": {
+       "orgs": ["<팀 조직>"],
+       "repos": [],
+       "authors": ["<내 커밋 이메일>"]
+     }
+   }
+   ```
+   `team`, `github`는 선택이다. GitHub 비공개 저장소는 `gh auth login`이 되어 있으면 함께 받는다.
 3. **Claude Code를 실행한다.**
    ```bash
    claude
@@ -93,6 +108,8 @@ brew install --cask libreoffice && brew install poppler
 ```mermaid
 flowchart LR
     N[Notion 프로필] -->|notion_export.py| P[(notion_profile.md<br/>supplements.md)]
+    T[팀 Notion · GitHub] -->|notion_export.py<br/>github_export.py| RF[(참고 자료<br/>문서·코드·이미지)]
+    RF --> M
     C[기업명·직무] --> R1[company-researcher<br/>research.md]
     C --> R2[brand-researcher<br/>brand.json]
     P --> M[매칭<br/>mapping.md]
@@ -110,7 +127,7 @@ flowchart LR
 
 | 단계 | 담당 | 산출물 |
 |---|---|---|
-| 1. 프로필 수집 | `scripts/notion_export.py` | `profile/notion_profile.md` |
+| 1. 자료 수집 | `scripts/notion_export.py`, `scripts/github_export.py` | `profile/notion_profile.md`, `team_notion.md`, `github/index.md`, `assets/` |
 | 2. 기업 조사 (병렬) | `company-researcher`, `brand-researcher` 서브에이전트 | `research.md`, `brand.json` |
 | 3. 매칭 | 메인 에이전트 | `mapping.md` |
 | 4. 보충 질문 | 메인 에이전트 ↔ 사용자 | `profile/supplements.md` |
@@ -171,6 +188,7 @@ flowchart LR
   ```json
   "derived": [{ "value": "42.2", "from": "52.6분 → 30.4분" }]
   ```
+- **참고 자료는 참고만 한다.** 팀 Notion과 GitHub는 본인 경험을 구체화하거나 팀 성과를 "팀"으로 표기할 때만 쓴다. 본인이 "구현했다"는 주장은 본인 커밋(`git log --author`)이 있는 코드에만 쓴다. 원본 서류처럼 개인정보가 담긴 이미지는 쓰지 않는다.
 - **보충 답변에는 출처를 붙인다.** `supplements.md`의 답변마다 `(출처: 사용자, 날짜, 기업)`을 남긴다. 모르는 값은 `(모름)`으로 적어 다시 묻지 않는다.
 
 ```bash
@@ -193,11 +211,13 @@ python3 scripts/check_facts.py companies/<slug> --find "<문장>"  # 문장이 �
    ├─ SKILL.md                전체 절차
    └─ reference/schemas.md    brand.json · deck.json 스키마
 scripts/
-├─ notion_export.py           공개 Notion 페이지 → Markdown
+├─ notion_export.py           공개 Notion 페이지 → Markdown + 이미지
+├─ github_export.py           저장소·위키 클론, 내 커밋·문서·이미지 목록
 ├─ check_facts.py             덱 수치 ↔ 사실 출처 대조
 ├─ build_deck.js              brand.json + deck.json → PPTX
 └─ preview.sh                 PPTX → PNG (LibreOffice 또는 Keynote)
-profile/                      notion_profile.md, supplements.md         (gitignore)
+profile/                      sources.json, notion_profile.md, supplements.md,
+                              team_notion.md, github/, assets/         (gitignore)
 companies/<slug>/             research.md, brand.json, mapping.md,
                               deck.json, assets/, review/              (gitignore)
 companies/_sample/            스키마 예시
@@ -228,6 +248,7 @@ output/                       <slug>_portfolio.pptx, preview/          (gitignor
 | Keynote 미리보기가 매우 느림 | 첫 실행은 원래 느리다. 타임아웃은 600초로 잡혀 있다 |
 | `check_facts.py`가 `출처에 없음`을 출력 | 해당 문장을 출처 값으로 고친다. 계산값이면 `derived`에 근거를 적고, 새 사실이면 `supplements.md`에 출처와 함께 추가한다 |
 | Notion 내보내기가 비어 있음 | 페이지가 "웹에 게시" 상태인지 확인한다 |
+| Notion 내보내기가 `429 — 60s 후 재시도`를 반복 | 공개 페이지 API의 요청 제한이다. `--delay 3`으로 천천히 돌리고 기다린다. 팀 워크스페이스는 수십 분 걸릴 수 있다 |
 | 한글이 단어 중간에서 줄바꿈됨 | Keynote는 한글을 글자 단위로 줄바꿈한다. 제목·헤드라인에는 `\n`을 직접 넣고(한 줄 18자 이내), 본문은 짧게 줄인다 |
 
 ## 참고

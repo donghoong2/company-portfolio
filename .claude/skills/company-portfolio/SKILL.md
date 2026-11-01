@@ -13,12 +13,33 @@ argument-hint: <기업명> [직무] [채용공고 URL]
 
 ## 0. 준비
 
-1. `profile/notion_profile.md`가 없거나 사용자가 "노션 새로고침/업데이트"를 요청했거나 파일이 7일 이상 지났으면 갱신한다:
+자료 위치는 `profile/sources.json`에 있다 (`notion.profile`, `notion.team[]`, `github.orgs[]`/`repos[]`, `github.authors[]`). 없으면 사용자에게 Notion 프로필 URL과 GitHub 조직·커밋 이메일을 받아 만든다.
+
+1. **자료 갱신**: 파일이 없거나, 사용자가 새로고침을 요청했거나, 아래 기한이 지났으면 갱신한다.
    ```bash
-   python3 scripts/notion_export.py "https://app.notion.com/p/Lee-Donghyeong-321c46c483db800f9f24c544837f9b9d"
+   # 개인 프로필 (7일) — 이미지까지
+   python3 scripts/notion_export.py "<notion.profile>" profile/notion_profile.md --assets profile/assets/profile
+   # 팀 Notion (14일) — 큰 워크스페이스는 요청 제한(429)이 걸려 수십 분 걸린다. 백그라운드로 돌린다
+   python3 scripts/notion_export.py "<notion.team[0]>" profile/team_notion.md --assets profile/assets/team --delay 3
+   #   team이 여러 개면 team_notion_2.md · assets/team_2 …
+   # GitHub 저장소·위키 (1일) — 클론/풀, 내 커밋·문서·이미지 목록
+   python3 scripts/github_export.py
    ```
-2. `profile/notion_profile.md`와 `profile/supplements.md`(있으면) 전체를 읽는다. **이 두 파일이 지원자에 대한 유일한 사실 출처다.** 여기에 없는 경험·수치·기술은 절대 만들지 않는다. `supplements.md`는 Notion에 없는 사실을 사용자에게 직접 받아 쌓은 파일이며(2-B, 6단계), `notion_export.py`가 덮어쓰지 않는다.
-3. `companies/<slug>/` 디렉터리를 만든다. 이미 `research.md`/`brand.json`이 있으면 재사용할지 사용자에게 묻지 말고, 30일 이내면 재사용·그 이상이면 재조사한다.
+2. **사실 출처**(지원자에 대한 유일한 근거)를 전부 읽는다: `profile/notion_profile.md`, `profile/supplements.md`(있으면). 여기에 없는 본인 경험·수치·기술은 절대 만들지 않는다. `supplements.md`는 사용자에게 직접 받은 사실이며(2-B, 6단계) 내보내기 스크립트가 덮어쓰지 않는다.
+3. **참고 자료**는 목록부터 읽고 필요한 부분만 연다: `profile/team_notion*.md`, `profile/github/index.md`, 이미지 목록 `profile/assets/*/index.md`. 쓰임과 한계는 아래 "참고 자료 규칙"을 따른다.
+4. `companies/<slug>/` 디렉터리를 만든다. 이미 `research.md`/`brand.json`이 있으면 재사용할지 사용자에게 묻지 말고, 30일 이내면 재사용·그 이상이면 재조사한다.
+
+### 참고 자료 규칙 (팀 Notion · GitHub 코드·위키)
+
+| 쓸 수 있는 것 | 쓰면 안 되는 것 |
+|---|---|
+| 사실 출처에 이미 있는 경험을 **구체화**하기 (클래스·설정·설계 문서·실험 기록 확인) | 사실 출처에 없는 일을 본인이 했다고 쓰기 |
+| **본인 기여 확인**: `git log --author=<authors> -- <경로>`로 본인 커밋이 있는 코드만 "구현했다"고 쓴다 | 팀원 커밋·팀 문서 내용을 본인 성과로 쓰기 |
+| 팀 성과·팀 문서 수치를 **팀 성과로 표기**해 쓰기 (예: "팀 검색 평가 R@5 0.894") | 커밋 이력이 없는 저장소(index.md ⚠️ 표시)로 기여를 판별하기 |
+| 이미지 (아래 "이미지 활용") | 멘토링 기록 속 다른 사람의 의견을 지원자 생각처럼 쓰기 |
+
+- 참고 자료에서 찾은 사실이 덱의 핵심 주장(본인 행동·수치)이 되면, 2-B처럼 사용자에게 확인받아 `supplements.md`에 출처(`팀 Notion: <페이지>` / `GitHub: <repo>/<경로>`)와 함께 적은 뒤 쓴다.
+- `check_facts.py`는 참고 자료에만 있는 수치를 `참고 자료에만 있음`으로 따로 보여준다. 그 문장이 팀 성과로 표기됐는지 확인한다.
 
 ## 1. 기업 조사 (병렬 서브에이전트 2개)
 
@@ -90,7 +111,12 @@ mapping.md를 쓰고 나서, 덱을 만들기 **전에** 사실 출처로 채울
 - `cover.headline`, `closing.message`, `section.title`은 의미 단위로 `\n`을 직접 넣어 줄바꿈한다 (한 줄 한글 18자 이내). Keynote는 한글을 글자 단위로 줄바꿈하므로 자동 줄바꿈에 맡기면 단어가 잘린다.
 - 각 슬라이드 `notes`에 면접에서 말할 30초 설명을 넣는다.
 - 사실 출처의 수치를 계산해 만든 값(감소율, 배수 등)은 최상위 `derived`에 근거를 적는다: `{ "value": "42.2", "from": "52.6분 → 30.4분" }`. 근거 없는 계산값은 쓰지 않는다.
-- 이미지가 필요하면 notion_profile.md의 공개 이미지 URL(raw.githubusercontent.com 등)을 `companies/<slug>/assets/`에 내려받아 `image` 슬라이드나 `project.image`로 쓴다. 내려받은 파일은 이미지인지(`file` 명령) 확인한다.
+- **이미지 활용** — 글만 있는 덱보다 실제 화면·구조도·측정 그래프가 신뢰를 준다. 적극적으로 쓴다:
+  - 후보: `profile/assets/profile/index.md`, `profile/assets/team/index.md`(위치·캡션 포함), `profile/github/index.md`의 "위키 이미지"·"저장소 이미지" 표(쓰인 문서·대체 텍스트 포함).
+  - 프로젝트마다 최소 1장: `project.image`에 서비스 화면 또는 구조도. 트러블슈팅(`star`)의 결과를 보여주는 그래프·대시보드(k6, Grafana, 전후 비교 등)가 있으면 바로 뒤에 `image` 슬라이드로 붙인다. 구조 설명은 `architecture` 대신 실제 구조도 이미지를 우선한다.
+  - 쓰기 전에 **Read로 열어** 내용·해상도·글자 가독성을 확인한다. 슬라이드에서 읽히지 않을 만큼 작은 글자가 많은 도식은 쓰지 않거나 핵심만 캡션으로 보완한다.
+  - **개인정보 주의**: 실제 서류 원본(`*original*`, 스캔본, 진단서·증권 원본)은 쓰지 않는다. 마스킹된 버전만 쓴다. 사람 얼굴·이름·연락처가 보이는 사진(단체 사진 포함)은 사용자에게 확인받은 뒤에만 쓴다.
+  - `companies/<slug>/assets/`로 복사해서 쓰고(원본 파일명 유지), `caption`에 무엇을 보여주는지 쓴다. 팀 자료(팀 위키·팀 Notion)에서 온 이미지는 캡션에 "팀 위키" 등 출처를 붙인다.
 - 로고는 사용자가 `companies/<slug>/logo.png`를 넣어둔 경우에만 `brand.logo`로 사용한다. 임의로 내려받지 않는다.
 
 ## 4. 빌드

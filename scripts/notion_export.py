@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
 """공개 Notion 페이지(하위 페이지 포함)를 Markdown으로 내보낸다.
 
-사용법: python3 scripts/notion_export.py <notion_url_or_page_id> [출력파일]
+사용법: python3 scripts/notion_export.py <notion_url_or_page_id> [출력파일] [--assets <이미지 폴더>] [--delay <초>]
 기본 출력: profile/notion_profile.md
+
+--assets: 페이지 속 이미지(Notion 첨부·외부 URL)를 내려받고 <이미지 폴더>/index.md에
+          파일 | 위치(페이지 › 제목) | 캡션 | 원본 목록을 남긴다. Markdown의 [image] 줄에도 로컬 경로를 붙인다.
 """
 import json
+import os
 import re
 import sys
+import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 API = "https://www.notion.so/api/v3"
 MAX_DEPTH = 4
+IMAGES = []          # (block_id, src, caption, context, filename)
+CTX = {"page": "", "heading": ""}
+BATCH = 100
+DELAY = 0.0          # 요청 사이 대기(초). 큰 워크스페이스는 --delay 3 정도로 429를 줄인다
 
 
 def norm_id(s):
@@ -27,8 +38,23 @@ def post(endpoint, body):
         data=json.dumps(body).encode(),
         headers={"content-type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.load(r)
+    time.sleep(DELAY)
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 500, 502, 503, 504) or attempt == 5:
+                raise
+            wait = int(e.headers.get("Retry-After") or 0) or 2 ** attempt * 3
+            print(f"  {e.code} — {wait}s 후 재시도", file=sys.stderr)
+            time.sleep(wait)
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as e:  # SSL EOF 등 일시적 네트워크 오류
+            if attempt == 5:
+                raise
+            wait = 2 ** attempt * 3
+            print(f"  네트워크 오류({e}) — {wait}s 후 재시도", file=sys.stderr)
+            time.sleep(wait)
 
 
 def unwrap(rec):
@@ -49,11 +75,13 @@ def load_page(page_id):
             break
     missing = {c for b in blocks.values() for c in b.get("content", []) if c not in blocks}
     while missing:
-        data = post("syncRecordValues", {"requests": [{"pointer": {"table": "block", "id": i}, "version": -1} for i in missing]})
-        for bid, rec in data.get("recordMap", {}).get("block", {}).items():
-            blocks[bid] = unwrap(rec)
-        new_missing = {c for b in blocks.values() for c in b.get("content", []) if c not in blocks} - missing
-        missing = new_missing
+        ids = sorted(missing)
+        for i in range(0, len(ids), BATCH):  # 한 번에 많이 요청하면 413
+            data = post("syncRecordValues", {"requests": [{"pointer": {"table": "block", "id": x}, "version": -1}
+                                                          for x in ids[i:i + BATCH]]})
+            for bid, rec in data.get("recordMap", {}).get("block", {}).items():
+                blocks[bid] = unwrap(rec)
+        missing = {c for b in blocks.values() for c in b.get("content", []) if c not in blocks} - missing
     return blocks
 
 
@@ -79,6 +107,10 @@ def render(bid, blocks, depth, indent, out, visited):
     title = text(p.get("title"))
     pad = "  " * indent
     child_indent = indent
+    if t in ("page", "header", "sub_header", "sub_sub_header"):
+        CTX["page" if t == "page" else "heading"] = title
+        if t == "page":
+            CTX["heading"] = ""
     if t == "page" and indent == 0 and depth == 0 and not out:
         out.append(f"# {title}\n")
     elif t == "page":
@@ -87,6 +119,7 @@ def render(bid, blocks, depth, indent, out, visited):
             return
         visited.add(bid)
         out.append(f"\n{'#' * min(depth + 2, 6)} 📄 {title}\n")
+        print(f"  {'  ' * depth}📄 {title}", file=sys.stderr)
         sub = load_page(bid)
         blocks.update(sub)
         for c in blocks[bid].get("content", []):
@@ -117,7 +150,13 @@ def render(bid, blocks, depth, indent, out, visited):
         out.append("---")
     elif t in ("image", "file", "pdf", "video", "bookmark", "embed"):
         src = (b.get("format") or {}).get("display_source") or text(p.get("source"))
-        out.append(f"{pad}[{t}] {title or ''} {src or ''}".rstrip())
+        line = f"{pad}[{t}] {title or ''} {src or ''}".rstrip()
+        if t == "image" and src:
+            cap = text(p.get("caption")) or title or ""
+            fname = image_name(len(IMAGES) + 1, src)
+            IMAGES.append((bid, src, cap, " › ".join(x for x in (CTX["page"], CTX["heading"]) if x), fname))
+            line += f" → {fname}"
+        out.append(line)
     elif t == "table_row":
         cells = [text(v) for v in p.values()]
         out.append("| " + " | ".join(cells) + " |")
@@ -177,17 +216,66 @@ def render_collection(b, blocks, depth, out, visited):
                 render(c, blocks, depth + 1, 0, out, visited)
 
 
+def image_name(n, src):
+    base = src.split("?")[0].rstrip("/").split("/")[-1].split(":")[-1]
+    stem, _, ext = base.rpartition(".")
+    if not stem or ext.lower() not in ("png", "jpg", "jpeg", "gif", "webp", "svg"):
+        stem, ext = base or "image", "png"
+    stem = re.sub(r"[^0-9A-Za-z가-힣_-]+", "-", stem).strip("-")[:60] or "image"
+    return f"{n:03d}-{stem}.{ext.lower()}"
+
+
+def download_images(folder):
+    os.makedirs(folder, exist_ok=True)
+    signed = {}
+    att = [(bid, src) for bid, src, *_ in IMAGES if src.startswith("attachment:") or "secure.notion-static.com" in src]
+    for i in range(0, len(att), 20):
+        part = att[i:i + 20]
+        res = post("getSignedFileUrls", {"urls": [{"url": s, "permissionRecord": {"table": "block", "id": b}} for b, s in part]})
+        for (b, _), u in zip(part, res.get("signedUrls", [])):
+            signed[b] = u
+    rows = ["| 파일 | 위치 | 캡션 | 원본 |", "|---|---|---|---|"]
+    ok = 0
+    for bid, src, cap, ctx, fname in IMAGES:
+        url = urllib.parse.quote(signed.get(bid) or src, safe=":/?&=%#+,;@!$'()*~")
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=60) as r, open(os.path.join(folder, fname), "wb") as f:
+                f.write(r.read())
+            ok += 1
+            status = fname
+        except Exception as e:  # noqa: BLE001 — 실패해도 목록에 남기고 계속
+            status = f"~~{fname}~~ (실패: {e})"
+        rows.append(f"| {status} | {ctx} | {cap.replace('|', '/')} | {src.split('?')[0][:120]} |")
+    with open(os.path.join(folder, "index.md"), "w", encoding="utf-8") as f:
+        f.write("# 이미지 목록\n\n" + "\n".join(rows) + "\n")
+    print(f"이미지: {ok}/{len(IMAGES)} 저장 → {folder}/")
+
+
 def main():
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+    assets = None
+    global DELAY
+    if "--delay" in args:
+        i = args.index("--delay")
+        DELAY = float(args[i + 1])
+        del args[i:i + 2]
+    if "--assets" in args:
+        i = args.index("--assets")
+        assets = args[i + 1]
+        del args[i:i + 2]
+    if not args:
         raise SystemExit(__doc__)
-    root = norm_id(sys.argv[1])
-    dest = sys.argv[2] if len(sys.argv) > 2 else "profile/notion_profile.md"
+    root = norm_id(args[0])
+    dest = args[1] if len(args) > 1 else "profile/notion_profile.md"
     blocks = load_page(root)
     out = []
     render(root, blocks, 0, 0, out, {root})
     with open(dest, "w", encoding="utf-8") as f:
         f.write("\n".join(out) + "\n")
     print(f"저장 완료: {dest} ({len(out)} lines)")
+    if assets:
+        download_images(assets)
 
 
 if __name__ == "__main__":

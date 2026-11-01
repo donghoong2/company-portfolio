@@ -7,8 +7,12 @@
 ## 구조
 
 ```
+profile/sources.json           자료 위치 (Notion 프로필·팀 Notion URL, GitHub 조직·커밋 이메일)
 profile/notion_profile.md      Notion에서 내보낸 지원자 프로필 (사실 출처)
 profile/supplements.md         Notion 밖에서 사용자에게 직접 받은 사실 (사실 출처, 기업 간 재사용)
+profile/team_notion.md         팀 Notion (참고 자료 — 팀 성과로만 표기)
+profile/github/                팀 저장소·위키 클론 + index.md (참고 자료 — 본인 커밋만 본인 기여)
+profile/assets/<출처>/          Notion 이미지 + index.md (위치·캡션)
 companies/<slug>/              기업별 작업물
   research.md                  인재상·채용공고 조사 (company-researcher)
   brand.json                   컬러·폰트·스타일 토큰 (brand-researcher)
@@ -19,7 +23,8 @@ companies/<slug>/              기업별 작업물
 companies/_sample/             렌더러 예시 (스키마 참고용)
 output/<slug>_portfolio.pptx   결과물
 output/preview/<name>/         검수용 PNG
-scripts/notion_export.py       공개 Notion 페이지 → Markdown (DB·하위 페이지 포함)
+scripts/notion_export.py       공개 Notion 페이지 → Markdown (DB·하위 페이지·이미지 포함)
+scripts/github_export.py       GitHub 저장소·위키 클론, 내 커밋·문서·이미지 목록
 scripts/check_facts.py         deck.json 수치 ↔ 사실 출처 대조 (빌드 전 필수)
 scripts/build_deck.js          brand.json + deck.json → PPTX (pptxgenjs)
 scripts/preview.sh             PPTX → PNG (LibreOffice 또는 Keynote)
@@ -28,6 +33,7 @@ scripts/preview.sh             PPTX → PNG (LibreOffice 또는 Keynote)
 ## 규칙
 
 - 지원자 경험·수치는 `profile/notion_profile.md`·`profile/supplements.md`에 있는 것만 쓴다. 과장·창작 금지, 팀 성과는 팀 성과로 표기. 빌드 전에 `check_facts.py`를 통과시킨다.
+- 팀 Notion·GitHub는 참고 자료다. 본인 기여는 사실 출처 또는 본인 커밋(`git log --author`)으로만 주장하고, 팀 문서·팀 수치는 팀 성과로 표기한다. 원본 서류 이미지 등 개인정보가 담긴 이미지는 쓰지 않는다.
 - 덱 품질은 `portfolio-reviewer`(PNG + 채용공고만 보는 블라인드 면접관)로 검증한다. 리뷰어에게 작성 의도나 매칭 분석을 넘기지 않는다.
 - 덱 디자인 변경은 `brand.json`(토큰)과 `deck.json`(내용)으로 해결하고, 새 레이아웃이 꼭 필요할 때만 `build_deck.js`에 slide 타입을 추가한다 (추가 시 `reference/schemas.md`도 갱신).
 - 브랜드 폰트는 자동 설치하지 않는다. 미설치 시 빌드가 fallback으로 대체하므로 사용자에게 설치를 안내한다.

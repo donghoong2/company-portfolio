@@ -106,6 +106,7 @@ mapping.md를 쓰고 나서, 덱을 만들기 **전에** 사실 출처로 채울
 8. `closing` — 기업에 대한 한 문장 포부
 
 작성 규칙:
+- `project.contributions`에는 사실 출처의 담당 영역을 모두 남기고 관련도 순으로 정렬한다. 기업 맞춤은 순서와 상세 사례(`star`)로 하고, 기여 범위를 줄이지 않는다. 담당이 많으면 `architecture` 슬라이드로 "맡은 일 전체"를 따로 둔다.
 - 모든 `project`/`star`/`activities` 항목에 `fitTag(s)`로 연결된 인재상 키워드를 붙인다.
 - 한 슬라이드 = 한 메시지. 텍스트 박스당 2~4줄, bullet은 3~5개, 문장은 명사형/간결체.
 - `cover.headline`, `closing.message`, `section.title`은 의미 단위로 `\n`을 직접 넣어 줄바꿈한다 (한 줄 한글 18자 이내). Keynote는 한글을 글자 단위로 줄바꿈하므로 자동 줄바꿈에 맡기면 단어가 잘린다.

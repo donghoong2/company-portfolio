@@ -22,8 +22,9 @@ if [ "${1##*.}" = "pdf" ]; then
   "$bin" "$src" "$out" 2 >/dev/null
 elif command -v soffice >/dev/null 2>&1 && command -v pdftoppm >/dev/null 2>&1; then
   soffice --headless --convert-to pdf --outdir "$out" "$src" >/dev/null
-  pdftoppm -png -r 80 "$out/$name.pdf" "$out/slide"
+  pdftoppm -png -r 80 "$out/$name.pdf" "$out/raw"
   rm -f "$out/$name.pdf"
+  i=1; for f in $(ls "$out"/raw-*.png | sort -V); do mv "$f" "$out/slide.$(printf %03d $i).png"; i=$((i+1)); done
 elif [ -d "/Applications/Keynote.app" ] || mdfind "kMDItemCFBundleIdentifier == 'com.apple.Keynote'" | grep -q .; then
   osascript <<OSA
 with timeout of 600 seconds

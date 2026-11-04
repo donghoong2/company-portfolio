@@ -33,5 +33,7 @@ jobs:
         run: node scripts/build_deck.js companies/_sample
       - name: Build sample resume (PDF, 인적사항 없이)
         run: node scripts/build_resume.js companies/_sample --allow-missing
+      - name: Build sample resume (Word)
+        run: node scripts/build_resume_docx.js companies/_sample --allow-missing
       - name: Check outputs
-        run: test -s output/_sample_portfolio.pptx && test -s output/_sample_resume.pdf
+        run: test -s output/_sample_portfolio.pptx && test -s output/_sample_resume.pdf && test -s output/_sample_resume.docx

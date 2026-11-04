@@ -198,7 +198,7 @@ flowchart LR
     --address "서울특별시 …" --photo ~/Pictures/photo.jpg --link GitHub=https://github.com/me
   python3 scripts/personal.py check    # 빠진 항목 확인
   ```
-- **렌더링:** `resume.json` → HTML → Chrome 헤드리스 인쇄(`scripts/build_resume.js`). 글자가 텍스트로 남아 채용 시스템의 텍스트 추출에도 읽힌다. 미리보기 PNG는 macOS PDFKit(`scripts/pdf2png.swift`)으로 만든다.
+- **렌더링:** `resume.json` → HTML → Chrome 헤드리스 인쇄(`scripts/build_resume.js`)로 제출용 PDF를, `scripts/build_resume_docx.js`로 같은 양식의 편집용 Word(.docx)를 만든다. 글자가 텍스트로 남아 채용 시스템의 텍스트 추출에도 읽힌다. 미리보기 PNG는 macOS PDFKit(`scripts/pdf2png.swift`)으로 만든다.
 - **검증:** 덱과 같은 수치 검사(`check_facts.py --file resume.json`)를 통과해야 빌드하고, `resume-reviewer`가 PNG와 공고만 보고 7개 기준(10초 직무 적합성, 성과 근거, 기여 범위, 공고 커버리지, 우선순위, 양식, 신뢰성)으로 채점한다.
 
 ```bash
@@ -252,6 +252,7 @@ scripts/
 ├─ build_deck.js              brand.json + deck.json → PPTX
 ├─ personal.py                이력서 인적사항·사진 입력 → profile/personal.json
 ├─ build_resume.js            resume.json + personal.json → PDF (Chrome 헤드리스)
+├─ build_resume_docx.js       resume.json + personal.json → 편집용 Word(.docx)
 ├─ pdf2png.swift              PDF → PNG (macOS PDFKit, preview.sh가 컴파일)
 └─ preview.sh                 PPTX/PDF → PNG
 tests/                        check_facts.py·personal.py 단위 테스트 (pytest)
@@ -261,7 +262,7 @@ profile/                      sources.json, notion_profile.md, supplements.md, p
 companies/<slug>/             research.md, brand.json, mapping.md,
                               deck.json, resume.json, assets/, review/  (gitignore)
 companies/_sample/            스키마 예시 (deck.json, resume.json)
-output/                       <slug>_portfolio.pptx, <slug>_resume.pdf, preview/  (gitignore)
+output/                       <slug>_portfolio.pptx, <slug>_resume.pdf·.docx, preview/  (gitignore)
 ```
 
 개인 지원 자료(`profile/`, `companies/<기업>/`, `output/`)는 `.gitignore`로 제외한다.
@@ -285,10 +286,11 @@ output/                       <slug>_portfolio.pptx, <slug>_resume.pdf, preview/
 uvx ruff check scripts tests                      # 린트 (설정: pyproject.toml)
 uv run --no-project --with pytest pytest -q       # 수치 검사·인적사항 입력 단위 테스트
 node scripts/build_deck.js companies/_sample      # 덱 렌더 스모크
-node scripts/build_resume.js companies/_sample --allow-missing   # 이력서 렌더 스모크
+node scripts/build_resume.js companies/_sample --allow-missing   # 이력서 렌더 스모크 (PDF)
+node scripts/build_resume_docx.js companies/_sample --allow-missing   # 이력서 렌더 스모크 (Word)
 ```
 
-PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 위 네 가지를 돌린다. 테스트는 `profile/` 없이 임시 디렉터리에서 돌아가므로 개인 자료가 필요 없다.
+PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 위 다섯 가지를 돌린다. 테스트는 `profile/` 없이 임시 디렉터리에서 돌아가므로 개인 자료가 필요 없다.
 
 ## 문제 해결
 

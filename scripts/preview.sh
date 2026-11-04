@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
-# PPTX → 슬라이드별 PNG (시각 검수용)
-# 사용법: bash scripts/preview.sh output/<slug>_portfolio.pptx
-# 출력: output/preview/<파일명>/slide.NNN.png
+# PPTX → 슬라이드별 PNG, PDF(이력서) → 페이지별 PNG (시각 검수용)
+# 사용법: bash scripts/preview.sh output/<slug>_portfolio.pptx | output/<slug>_resume.pdf
+# 출력: output/preview/<파일명>/slide.NNN.png (PPTX) · page.NNN.png (PDF)
+# PDF는 macOS PDFKit(scripts/pdf2png.swift)을 쓴다. 첫 실행 때 scripts/.bin/pdf2png로 컴파일한다(2~3분).
 # 임시 폴더에 렌더하고, 성공했을 때만 기존 미리보기를 교체한다 (렌더 실패 시 이전 PNG 보존)
 set -euo pipefail
 src="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-name="$(basename "$1" .pptx)"
+name="$(basename "${1%.*}")"
 dest="$(pwd)/output/preview/$name"
 out="$dest.tmp.$$"
 trap 'rm -rf "$out"' EXIT
 mkdir -p "$out"
 
-if command -v soffice >/dev/null 2>&1 && command -v pdftoppm >/dev/null 2>&1; then
+if [ "${1##*.}" = "pdf" ]; then
+  bin="$(pwd)/scripts/.bin/pdf2png"
+  if [ ! -x "$bin" ] || [ scripts/pdf2png.swift -nt "$bin" ]; then
+    command -v swiftc >/dev/null 2>&1 || { echo "swiftc 없음: xcode-select --install 필요" >&2; exit 2; }
+    echo "pdf2png 컴파일 중 (첫 실행 2~3분)…" >&2
+    mkdir -p "$(dirname "$bin")" && swiftc -O scripts/pdf2png.swift -o "$bin"
+  fi
+  "$bin" "$src" "$out" 2 >/dev/null
+elif command -v soffice >/dev/null 2>&1 && command -v pdftoppm >/dev/null 2>&1; then
   soffice --headless --convert-to pdf --outdir "$out" "$src" >/dev/null
   pdftoppm -png -r 80 "$out/$name.pdf" "$out/slide"
   rm -f "$out/$name.pdf"

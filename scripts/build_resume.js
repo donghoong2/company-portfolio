@@ -177,7 +177,7 @@ h2 { font-size: 10.5pt; font-weight: 800; margin: 3.2mm 0 1.2mm; padding-left: 2
 section.break { break-before: page; }
 section.break h2 { margin-top: 0; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-th, td { border: 0.6pt solid #8a8a8a; padding: 0.9mm 2mm; vertical-align: middle; }
+th, td { border: 0.6pt solid #8a8a8a; padding: 0.7mm 2mm; vertical-align: middle; }
 th { background: #f1f3f5; font-weight: 700; text-align: center; }
 .grid thead th { background: #e7eaee; }
 col.k { width: 15mm; }
@@ -199,8 +199,9 @@ li b { white-space: nowrap; }
 .text { border: 0.6pt solid #8a8a8a; padding: 2mm 3mm; } .text p { margin: 0.8mm 0; }
 section.sec-text { break-inside: avoid; }
 a { color: inherit; text-decoration: none; }
-.decl { margin-top: 4.5mm; text-align: center; break-inside: avoid; font-size: 10pt; }
-.decl p { margin: 1.2mm 0; } .decl .sign { text-align: right; margin-right: 6mm; margin-top: 2mm; }
+.decl { margin-top: 4mm; display: flex; justify-content: space-between; align-items: baseline; gap: 4mm;
+  break-inside: avoid; font-size: 10pt; padding: 0 2mm; }
+.decl p { margin: 0; } .decl .sign { margin-left: auto; }
 </style></head>
 <body>
 <h1>${esc(meta.title || "이력서")}</h1>
@@ -241,6 +242,7 @@ try {
     [
       "--headless",
       "--disable-gpu",
+      ...(process.env.CI ? ["--no-sandbox"] : []), // GitHub Actions(Ubuntu 24.04)는 Chrome 샌드박스용 user namespace를 막는다
       "--no-first-run",
       "--no-default-browser-check",
       `--user-data-dir=${path.join(tmp, "chrome")}`,

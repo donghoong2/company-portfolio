@@ -121,8 +121,8 @@ def main(argv):
             out += ["", "### 내 커밋 (최근 40)", *[f"- {m.replace(chr(9), ' ')}" for m in mine[:40]]]
         else:
             out.append(f"- 내 커밋(merge 제외, 전 브랜치): 0 / 전체 {total}")
-        for label, d, raw in (("저장소", repo_dir, f"https://raw.githubusercontent.com/{full}/HEAD"),
-                              ("위키", wiki_dir, f"https://raw.githubusercontent.com/wiki/{full}")):
+        for label, d, _raw in (("저장소", repo_dir, f"https://raw.githubusercontent.com/{full}/HEAD"),
+                               ("위키", wiki_dir, f"https://raw.githubusercontent.com/wiki/{full}")):
             if not d.is_dir():
                 continue
             docs, imgs, used = docs_and_images(d)

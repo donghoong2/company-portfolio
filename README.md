@@ -7,6 +7,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-D97757)](https://claude.com/claude-code)
 [![Node.js](https://img.shields.io/badge/Node.js-pptxgenjs-339933?logo=nodedotjs&logoColor=white)](https://gitbrent.github.io/PptxGenJS/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![CI](https://github.com/donghoong2/company-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/donghoong2/company-portfolio/actions/workflows/ci.yml)
 
 <img src="docs/images/sample-cover.png" alt="생성된 포트폴리오 표지 예시 (Sample Corp 테마)" width="720">
 
@@ -33,6 +34,7 @@
 - [사실 검증 원칙](#사실-검증-원칙)
 - [프로젝트 구조](#프로젝트-구조)
 - [커스터마이징](#커스터마이징)
+- [개발](#개발)
 - [문제 해결](#문제-해결)
 - [참고](#참고)
 
@@ -54,7 +56,7 @@
 | 🛡️ | **수치 검사** | 덱의 모든 수치를 사실 출처와 대조. 출처에 없는 숫자가 하나라도 있으면 빌드하지 않음 |
 | 🧑‍💼 | **면접관 리뷰** | 슬라이드와 채용공고만 보는 블라인드 리뷰어가 7개 기준으로 채점하고, 최대 3회 고친 뒤 다시 평가 |
 | 🗣️ | **발표자 노트** | 슬라이드마다 면접에서 말할 30초 설명 포함 |
-| 📄 | **표준 양식 이력서** | 같은 조사·매칭·사실 출처로 사진·인적사항 표 + 학력·교육·활동·자격·기술 표 + 프로젝트 경험 2쪽 PDF. 서류 심사관 블라인드 리뷰 포함 |
+| 📄 | **표준 양식 이력서** | 같은 조사·매칭·사실 출처로 사진·인적사항 표 + 학력·교육·활동·자격·기술 표 + 프로젝트 경험 PDF. 서류 심사관 블라인드 리뷰 포함 |
 
 ## 빠른 시작
 
@@ -187,7 +189,7 @@ flowchart LR
 /company-resume [기업명] [직무] [채용공고 URL]     기업명을 빼면 범용 이력서 (companies/general/)
 ```
 
-범용 표준 양식(사진·인적사항 표 → 핵심 역량 3줄 → 학력 → 병역 → 경력 → 교육 → 자격 → 보유기술 → 대외활동 → 새 쪽에 프로젝트 경험 → 확인 문구)을 따르는 A4 2쪽 PDF를 만든다. 포트폴리오를 먼저 만든 기업이면 `research.md`·`mapping.md`를 그대로 다시 쓴다.
+범용 표준 양식(사진·인적사항 표 → 핵심 역량 3줄 → 학력 → 병역 → 경력 → 교육 → 자격 → 보유기술 → 대외활동 → 새 쪽에 프로젝트 경험 → 확인 문구)을 따르는 A4 PDF를 만든다. 프로젝트는 bullet 2~3개로 요약하고 상세는 포트폴리오에 맡긴다(쪽 수 제한 없음). 포트폴리오를 먼저 만든 기업이면 `research.md`·`mapping.md`를 그대로 다시 쓴다.
 
 - **인적사항은 저장소 밖에 둔다.** 사진·생년월일·주소·연락처는 `profile/personal.json`과 `profile/photo.*`에만 저장된다(gitignore). 처음 실행하면 Claude가 한 번 묻고, 직접 넣으려면:
   ```bash
@@ -252,6 +254,8 @@ scripts/
 ├─ build_resume.js            resume.json + personal.json → PDF (Chrome 헤드리스)
 ├─ pdf2png.swift              PDF → PNG (macOS PDFKit, preview.sh가 컴파일)
 └─ preview.sh                 PPTX/PDF → PNG
+tests/                        check_facts.py·personal.py 단위 테스트 (pytest)
+.github/workflows/ci.yml      ruff · pytest · 렌더 스모크
 profile/                      sources.json, notion_profile.md, supplements.md, personal.json,
                               photo.*, team_notion.md, github/, assets/   (gitignore)
 companies/<slug>/             research.md, brand.json, mapping.md,
@@ -275,6 +279,17 @@ output/                       <slug>_portfolio.pptx, <slug>_resume.pdf, preview/
   ```
 - **새 레이아웃:** 꼭 필요할 때만 `build_deck.js`에 slide 타입을 추가하고 `schemas.md`도 같이 고친다.
 
+## 개발
+
+```bash
+uvx ruff check scripts tests                      # 린트 (설정: pyproject.toml)
+uv run --no-project --with pytest pytest -q       # 수치 검사·인적사항 입력 단위 테스트
+node scripts/build_deck.js companies/_sample      # 덱 렌더 스모크
+node scripts/build_resume.js companies/_sample --allow-missing   # 이력서 렌더 스모크
+```
+
+PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 위 네 가지를 돌린다. 테스트는 `profile/` 없이 임시 디렉터리에서 돌아가므로 개인 자료가 필요 없다.
+
 ## 문제 해결
 
 | 증상 | 해결 |
@@ -286,7 +301,7 @@ output/                       <slug>_portfolio.pptx, <slug>_resume.pdf, preview/
 | Notion 내보내기가 비어 있음 | 페이지가 "웹에 게시" 상태인지 확인한다 |
 | Notion 내보내기가 `429 — 60s 후 재시도`를 반복 | 공개 페이지 API의 요청 제한이다. `--delay 3`으로 천천히 돌리고 기다린다. 팀 워크스페이스는 수십 분 걸릴 수 있다 |
 | `인적사항 미입력: …` (build_resume.js) | `python3 scripts/personal.py`로 입력한다. 빈칸 초안만 보려면 `--allow-missing` |
-| 이력서가 3쪽으로 넘침 | bullet을 줄이거나 관련 낮은 활동 행·기술 그룹을 뺀다. 1쪽 끝의 한두 줄만 넘어간 경우가 많다 |
+| 한두 줄만 다음 쪽으로 넘어감 | 그 부분 문장을 다듬는다. 쪽 수 제한은 없지만(`meta.maxPages`로 경고만 켤 수 있다) 빈 쪽에 가까운 마지막 쪽은 보기 나쁘다 |
 | `preview.sh`가 PDF에서 오래 멈춤 | 첫 실행은 PDF 변환기(`scripts/.bin/pdf2png`)를 컴파일한다(2~3분). `swiftc`가 없으면 `xcode-select --install` |
 | 한글이 단어 중간에서 줄바꿈됨 | Keynote는 한글을 글자 단위로 줄바꿈한다. 제목·헤드라인에는 `\n`을 직접 넣고(한 줄 18자 이내), 본문은 짧게 줄인다 |
 

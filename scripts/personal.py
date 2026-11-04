@@ -48,7 +48,7 @@ def prefill(data: dict) -> None:
         data.setdefault("name", m.group(1))
         data.setdefault("nameEn", m.group(2).strip())
     gh = re.search(r"https://github\.com/[\w-]+(?=[)\s])", text)
-    if gh and not any(l.get("label") == "GitHub" for l in data["links"]):
+    if gh and not any(link.get("label") == "GitHub" for link in data["links"]):
         data["links"].append({"label": "GitHub", "url": gh.group(0)})
 
 
@@ -114,7 +114,7 @@ def put_link(data: dict, spec: str) -> None:
     label, _, url = spec.partition("=")
     if not url:
         raise ValueError(f"--link 형식: 라벨=URL ({spec})")
-    data["links"] = [l for l in data["links"] if l.get("label") != label.strip()]
+    data["links"] = [link for link in data["links"] if link.get("label") != label.strip()]
     data["links"].append({"label": label.strip(), "url": url.strip()})
 
 

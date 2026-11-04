@@ -232,7 +232,7 @@ def download_images(folder):
     for i in range(0, len(att), 20):
         part = att[i:i + 20]
         res = post("getSignedFileUrls", {"urls": [{"url": s, "permissionRecord": {"table": "block", "id": b}} for b, s in part]})
-        for (b, _), u in zip(part, res.get("signedUrls", [])):
+        for (b, _), u in zip(part, res.get("signedUrls", []), strict=False):
             signed[b] = u
     rows = ["| 파일 | 위치 | 캡션 | 원본 |", "|---|---|---|---|"]
     ok = 0

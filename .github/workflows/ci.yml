@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: lint · test (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Ruff lint
+        run: uvx ruff check scripts tests
+      - name: Pytest
+        run: uv run --no-project --with pytest pytest -q
+
+  render:
+    name: render smoke (Node · Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: for f in scripts/*.js; do node --check "$f"; done
+      - name: Build sample deck (PPTX)
+        run: node scripts/build_deck.js companies/_sample
+      - name: Build sample resume (PDF, 인적사항 없이)
+        run: node scripts/build_resume.js companies/_sample --allow-missing
+      - name: Check outputs
+        run: test -s output/_sample_portfolio.pptx && test -s output/_sample_resume.pdf

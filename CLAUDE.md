@@ -26,7 +26,7 @@ companies/<slug>/              기업별 작업물
   assets/                      덱에 쓰는 이미지
 companies/_sample/             렌더러 예시 (스키마 참고용)
 output/<slug>_portfolio.pptx   결과물
-output/<slug>_resume.pdf       이력서 결과물 (개인정보 포함)
+output/<slug>_resume.pdf·.docx 이력서 결과물 — 제출용 PDF·편집용 Word (개인정보 포함)
 output/preview/<name>/         검수용 PNG
 scripts/notion_export.py       공개 Notion 페이지 → Markdown (DB·하위 페이지·이미지 포함)
 scripts/github_export.py       GitHub 저장소·위키 클론, 내 커밋·문서·이미지 목록
@@ -34,6 +34,7 @@ scripts/check_facts.py         deck.json·resume.json(--file) 수치 ↔ 사실 
 scripts/build_deck.js          brand.json + deck.json → PPTX (pptxgenjs)
 scripts/personal.py            이력서 인적사항·사진 입력 → profile/personal.json
 scripts/build_resume.js        resume.json + personal.json → PDF (Chrome 헤드리스)
+scripts/build_resume_docx.js   resume.json + personal.json → 편집용 Word(.docx, docx npm)
 scripts/pdf2png.swift          PDF → PNG (macOS PDFKit, preview.sh가 scripts/.bin/에 컴파일)
 scripts/preview.sh             PPTX/PDF → PNG
 ```

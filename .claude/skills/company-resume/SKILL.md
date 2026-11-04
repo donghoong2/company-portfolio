@@ -52,13 +52,14 @@ argument-hint: [기업명] [직무] [채용공고 URL]
 
 ```bash
 python3 scripts/check_facts.py companies/<slug> --file resume.json
-node scripts/build_resume.js companies/<slug>
+node scripts/build_resume.js companies/<slug>        # 제출용 PDF
+node scripts/build_resume_docx.js companies/<slug>   # 편집용 Word(.docx)
 ```
 
 - `check_facts.py`가 `출처에 없음`을 내면 빌드하지 않는다(company-portfolio 4단계와 같은 규칙).
 - 인적사항 미입력으로 멈추면 0단계로 돌아간다. 사용자가 빈칸 초안을 원할 때만 `--allow-missing`.
 - 렌더러는 Chrome(또는 Chromium·Edge) 헤드리스로 인쇄한다. 없으면 설치를 안내한다.
-- 출력: `output/<slug>_resume.pdf` (개인정보 포함 — output/은 gitignore). 몇 쪽인지 출력한다(`meta.maxPages`를 지정했을 때만 넘으면 경고).
+- 출력: `output/<slug>_resume.pdf`와 `output/<slug>_resume.docx` (개인정보 포함 — output/은 gitignore). 같은 resume.json에서 같은 양식으로 그린다. Word본은 표·글머리표·링크가 실제 요소라 Word·한컴오피스·Pages·Google Docs에서 고칠 수 있다(글꼴 한글 맑은 고딕·영문 Arial, `style.font`·`style.latinFont`로 바꿈). 사용자가 Word본을 직접 고쳤다면 그 파일이 최신이므로 다시 빌드해 덮어쓰기 전에 묻는다. 몇 쪽인지 출력한다(`meta.maxPages`를 지정했을 때만 넘으면 경고).
 
 ## 5. 시각 검수
 

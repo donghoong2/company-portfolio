@@ -34,7 +34,7 @@
     "declaration": true             // 선택, false면 "위의 기재 사항은 …" 확인 문구를 뺀다,
     "info": [{ "label": "근무 가능", "value": "2027.01.04 ~ 02.26" }]   // 선택, 공고가 요구하는 조건을 인적사항 표에 행으로 (주소 아래)
   },
-  "style": { "font": "Pretendard", "accent": "#2B2B2B" },   // 선택. 기본 폰트 Pretendard → Nanum Gothic → Apple SD Gothic Neo
+  "style": { "font": "Pretendard", "latinFont": "Arial", "accent": "#2B2B2B" },   // 선택. PDF 기본 폰트 Pretendard → Nanum Gothic → Apple SD Gothic Neo, Word본 기본 한글 맑은 고딕·영문 Arial
   "sections": [ /* 아래 타입, 위에서부터 순서대로 */ ],
   "derived": [{ "value": "42.2", "from": "52.6분 → 30.4분" }]  // 선택, check_facts.py용 (deck.json과 같음)
 }

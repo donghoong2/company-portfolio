@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "role": "Backend Engineer",
+    "company": null,
+    "maxPages": 2
+  },
+  "sections": [
+    {
+      "type": "text",
+      "title": "핵심 역량",
+      "items": [
+        "**Spring Boot 백엔드·성능** — 손해사정사 조회 API 처리량 **85 → 약 298 TPS**, p95 **4.96s → 95ms** (바른보상·k6, 인프라 동일)",
+        "**비동기 데이터 파이프라인** — 약관 ETL 처리 시간 **−42.2%** (296쪽 문서 52.6분 → 30.4분), SQS 기반 OCR 13단계 파이프라인을 실제 SQS·DB·S3 E2E로 검증",
+        "**인프라·운영** — EC2 Docker Compose를 kubeadm 클러스터로 이전, Helm 차트 유실을 계기로 Argo CD GitOps 전환"
+      ]
+    },
+    {
+      "type": "table",
+      "title": "학력사항",
+      "columns": [
+        "기간",
+        "학교명",
+        "전공",
+        "구분"
+      ],
+      "widths": [
+        22,
+        18,
+        40,
+        20
+      ],
+      "rows": [
+        [
+          "2021.03 ~ 2027.07",
+          "서강대학교",
+          "국어국문학과·컴퓨터공학과(복수전공)",
+          "재학 (졸업예정)"
+        ]
+      ]
+    },
+    {
+      "type": "table",
+      "title": "교육사항",
+      "columns": [
+        "기간",
+        "교육과정",
+        "내용"
+      ],
+      "widths": [
+        20,
+        30,
+        50
+      ],
+      "rows": [
+        [
+          "2026.03 ~ 현재",
+          "AI·SW마에스트로 17기",
+          "팀 '윤동주' — 바른보상 개발, 2026.12 종료 예정"
+        ]
+      ]
+    },
+    {
+      "type": "skills",
+      "title": "보유기술",
+      "groups": [
+        {
+          "name": "Backend",
+          "items": [
+            "Spring Boot",
+            "Spring Security",
+            "Spring Data JPA",
+            "OAuth2",
+            "JWT",
+            "STOMP(WebSocket)",
+            "REST API"
+          ]
+        },
+        {
+          "name": "Data·Messaging",
+          "items": [
+            "PostgreSQL(pgvector)",
+            "MySQL",
+            "Redis",
+            "Amazon SQS"
+          ]
+        },
+        {
+          "name": "Infra·DevOps",
+          "items": [
+            "AWS(EC2, RDS, S3, ECR)",
+            "Docker",
+            "Kubernetes(kubeadm)",
+            "Helm",
+            "Argo CD",
+            "GitHub Actions"
+          ]
+        },
+        {
+          "name": "Observability·Test",
+          "items": [
+            "Prometheus",
+            "Grafana",
+            "Loki",
+            "Tempo",
+            "k6"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "projects",
+      "title": "프로젝트 경험",
+      "pageBreak": true,
+      "items": [
+        {
+          "name": "바른보상",
+          "summary": "AI 기반 보험금 청구 지원·손해사정사 매칭 플랫폼",
+          "org": "AI·SW마에스트로 17기",
+          "period": "2026.05 ~ 현재",
+          "team": "3명 (FE 1·BE 2)",
+          "role": "백엔드(BE 2명 중 1명) — 손해사정사 조회 API 성능 개선, OCR 워커·채팅 도메인·인증 직접 구현, kubeadm 클러스터 직접 구축, 약관 ETL 초기 구조와 처리 시간 단축, 관측성·부하테스트",
+          "stack": [
+            "Java",
+            "Python",
+            "Spring Boot",
+            "PostgreSQL(pgvector)",
+            "Redis",
+            "AWS(EC2, RDS, S3, SQS, ECR)",
+            "Docker",
+            "Kubernetes(Helm)",
+            "Argo CD",
+            "GitHub Actions",
+            "Prometheus",
+            "Grafana",
+            "Loki",
+            "Tempo",
+            "k6"
+          ],
+          "bullets": [
+            "**손해사정사 조회 API 성능 개선** — pg_stat_activity 샘플링으로 generic plan 병목을 특정, 쿼리·인덱스·캐시·플랜 고정으로 k6 8분 목표 부하에서 처리량 **85 → 약 298 TPS**, p95 **4.96s → 95ms**, 실패율 0% (인프라 동일)",
+            "**관측성·부하테스트 기반** — Prometheus·Grafana·Loki·Tempo 스택과 API별 p50/p95/p99 대시보드, k6 시드 러너를 구축해 병목이 앱이 아닌 DB(HikariCP 대기·RDS CPU)임을 지표로 구분",
+            "**OCR 문서 처리 파이프라인** — SQS 워커 13단계 파이프라인(OCR → VLM → PII 마스킹 → 검증 게이트 → fan-in 등) 구현, 유닛 테스트 209개 통과 후 실제 E2E에서 마이그레이션 누락·정규식 오탐을 잡아 문서 9건 저장 **0/9 → 9/9**"
+          ],
+          "link": "https://github.com/SM17-YoonDongJu"
+        }
+      ]
+    }
+  ]
+}

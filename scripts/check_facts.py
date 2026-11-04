@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""deck.json의 수치가 지원자 프로필에 실제로 있는지 검사한다.
+"""deck.json(또는 resume.json)의 수치가 지원자 프로필에 실제로 있는지 검사한다.
 
-사용법: check_facts.py companies/<slug>                 수치 검사
-        check_facts.py companies/<slug> --find "<문장>"  문장이 덱 어느 슬라이드에 있는지 (리뷰 인용 확인용)
+사용법: check_facts.py companies/<slug> [--file resume.json]                 수치 검사
+        check_facts.py companies/<slug> [--file resume.json] --find "<문장>"  문장이 어느 슬라이드·섹션에 있는지 (리뷰 인용 확인용)
+
+- --file 기본값은 deck.json(slides[]). resume.json은 sections[]를 검사한다 (인적사항은 profile/personal.json이라 검사 대상 아님).
 
 - 사실 출처: profile/notion_profile.md, profile/supplements.md(있으면)
 - 참고 자료: profile/team_notion*.md, profile/github/ 아래 문서(.md). 여기에만 있는 수치는 통과시키되
@@ -63,18 +65,38 @@ def squash(s: str) -> str:
     return re.sub(r"\s+", "", s)
 
 
-def main(argv: list[str]) -> int:
-    if not argv or not (Path(argv[0]) / "deck.json").is_file():
-        print(__doc__.strip().splitlines()[2])
-        print(__doc__.strip().splitlines()[3])
-        return 2
-    deck = json.loads((Path(argv[0]) / "deck.json").read_text(encoding="utf-8"))
-    slides = deck.get("slides", [])
+def usage() -> int:
+    print("\n".join(__doc__.strip().splitlines()[2:4]))
+    return 2
 
-    if len(argv) == 3 and argv[1] == "--find":
-        q = squash(argv[2])
+
+def main(argv: list[str]) -> int:
+    name, find, rest = "deck.json", None, []
+    i = 0
+    while i < len(argv):
+        if argv[i] in ("--file", "--find"):
+            if i + 1 >= len(argv):
+                return usage()
+            if argv[i] == "--file":
+                name = argv[i + 1]
+            else:
+                find = argv[i + 1]
+            i += 2
+        else:
+            rest.append(argv[i])
+            i += 1
+    if len(rest) != 1 or not (Path(rest[0]) / name).is_file():
+        return usage()
+    deck = json.loads((Path(rest[0]) / name).read_text(encoding="utf-8"))
+    if "slides" in deck:
+        slides, unit = deck["slides"], "슬라이드"
+    else:
+        slides, unit = deck.get("sections", []), "섹션"
+
+    if find is not None:
+        q = squash(find)
         hits = [i for i, s in enumerate(slides, 1) if any(q in squash(t) for _, t in strings(s))]
-        print(f"있음: 슬라이드 {', '.join(map(str, hits))}" if hits else "없음 (이미지 속 글자일 수 있으니 PNG로 확인)")
+        print(f"있음: {unit} {', '.join(map(str, hits))}" if hits else "없음 (이미지 속 글자일 수 있으니 PNG로 확인)")
         return 0 if hits else 1
 
     src = [p for p in SOURCES if p.is_file()]
@@ -109,15 +131,15 @@ def main(argv: list[str]) -> int:
             only_ref = sorted(n for n in nums if n in ref)
             miss = sorted(nums - set(only_ref))
             if only_ref:
-                print(f"참고 자료에만 있음: 슬라이드 {i} ({s.get('type')}) {path} — {', '.join(only_ref)} | \"{text[:80]}\" → 팀 성과로 표기했는지 확인")
+                print(f"참고 자료에만 있음: {unit} {i} ({s.get('type')}) {path} — {', '.join(only_ref)} | \"{text[:80]}\" → 팀 성과로 표기했는지 확인")
             if miss:
                 bad += 1
-                print(f"출처에 없음: 슬라이드 {i} ({s.get('type')}) {path} — {', '.join(miss)} | \"{text[:80]}\"")
+                print(f"출처에 없음: {unit} {i} ({s.get('type')}) {path} — {', '.join(miss)} | \"{text[:80]}\"")
     print(f"사실 출처: {', '.join(map(str, src))}" + (f" · 참고 자료 {len(refs)}개" if refs else ""))
     if bad or not ok:
         print(f"실패: 출처에서 확인되지 않는 수치 {bad}곳")
         return 1
-    print("통과: 덱의 모든 수치가 출처에 있다")
+    print(f"통과: {name}의 모든 수치가 출처에 있다")
     return 0
 
 

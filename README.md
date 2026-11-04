@@ -2,7 +2,7 @@
 
 # 기업 맞춤 포트폴리오 생성기
 
-**기업 이름 하나로, 그 회사의 인재상·채용공고·브랜드에 맞춘 포트폴리오 PPTX를 만든다.**
+**기업 이름 하나로, 그 회사의 인재상·채용공고·브랜드에 맞춘 포트폴리오 PPTX와 표준 양식 이력서 PDF를 만든다.**
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-D97757)](https://claude.com/claude-code)
 [![Node.js](https://img.shields.io/badge/Node.js-pptxgenjs-339933?logo=nodedotjs&logoColor=white)](https://gitbrent.github.io/PptxGenJS/)
@@ -16,6 +16,7 @@
 
 ```text
 /company-portfolio 토스 백엔드
+/company-resume 토스 백엔드
 ```
 
 ---
@@ -28,6 +29,7 @@
 - [사용법](#사용법)
 - [동작 방식](#동작-방식)
 - [결과물](#결과물)
+- [이력서](#이력서)
 - [사실 검증 원칙](#사실-검증-원칙)
 - [프로젝트 구조](#프로젝트-구조)
 - [커스터마이징](#커스터마이징)
@@ -52,6 +54,7 @@
 | 🛡️ | **수치 검사** | 덱의 모든 수치를 사실 출처와 대조. 출처에 없는 숫자가 하나라도 있으면 빌드하지 않음 |
 | 🧑‍💼 | **면접관 리뷰** | 슬라이드와 채용공고만 보는 블라인드 리뷰어가 7개 기준으로 채점하고, 최대 3회 고친 뒤 다시 평가 |
 | 🗣️ | **발표자 노트** | 슬라이드마다 면접에서 말할 30초 설명 포함 |
+| 📄 | **표준 양식 이력서** | 같은 조사·매칭·사실 출처로 사진·인적사항 표 + 학력·교육·활동·자격·기술 표 + 프로젝트 경험 2쪽 PDF. 서류 심사관 블라인드 리뷰 포함 |
 
 ## 빠른 시작
 
@@ -178,6 +181,31 @@ flowchart LR
 | `activities` · `skills` | 활동 이력, 기술 스택(기업 스택과 겹치는 것을 앞에) |
 | `closing` | 기업에 대한 한 문장 포부 |
 
+## 이력서
+
+```text
+/company-resume [기업명] [직무] [채용공고 URL]     기업명을 빼면 범용 이력서 (companies/general/)
+```
+
+범용 표준 양식(사진·인적사항 표 → 핵심 역량 3줄 → 학력 → 병역 → 경력 → 교육 → 자격 → 보유기술 → 대외활동 → 새 쪽에 프로젝트 경험 → 확인 문구)을 따르는 A4 2쪽 PDF를 만든다. 포트폴리오를 먼저 만든 기업이면 `research.md`·`mapping.md`를 그대로 다시 쓴다.
+
+- **인적사항은 저장소 밖에 둔다.** 사진·생년월일·주소·연락처는 `profile/personal.json`과 `profile/photo.*`에만 저장된다(gitignore). 처음 실행하면 Claude가 한 번 묻고, 직접 넣으려면:
+  ```bash
+  python3 scripts/personal.py          # 터미널에서 항목별 입력
+  python3 scripts/personal.py set --birth 2000-01-01 --phone 010-0000-0000 --email me@example.com \
+    --address "서울특별시 …" --photo ~/Pictures/photo.jpg --link GitHub=https://github.com/me
+  python3 scripts/personal.py check    # 빠진 항목 확인
+  ```
+- **렌더링:** `resume.json` → HTML → Chrome 헤드리스 인쇄(`scripts/build_resume.js`). 글자가 텍스트로 남아 채용 시스템의 텍스트 추출에도 읽힌다. 미리보기 PNG는 macOS PDFKit(`scripts/pdf2png.swift`)으로 만든다.
+- **검증:** 덱과 같은 수치 검사(`check_facts.py --file resume.json`)를 통과해야 빌드하고, `resume-reviewer`가 PNG와 공고만 보고 7개 기준(10초 직무 적합성, 성과 근거, 기여 범위, 공고 커버리지, 우선순위, 양식, 신뢰성)으로 채점한다.
+
+```bash
+python3 scripts/check_facts.py companies/<slug> --file resume.json && node scripts/build_resume.js companies/<slug>
+bash scripts/preview.sh output/<slug>_resume.pdf
+```
+
+스키마와 표준 섹션 순서는 [`resume-schema.md`](.claude/skills/company-resume/reference/resume-schema.md).
+
 ## 사실 검증 원칙
 
 > 지원자 경험·수치는 `profile/notion_profile.md`와 `profile/supplements.md`에 있는 것만 쓴다.
@@ -206,22 +234,30 @@ python3 scripts/check_facts.py companies/<slug> --find "<문장>"  # 문장이 �
 ├─ agents/
 │  ├─ company-researcher.md   인재상·채용공고 조사
 │  ├─ brand-researcher.md     브랜드 컬러·폰트·톤 조사
-│  └─ portfolio-reviewer.md   블라인드 면접관 리뷰
-└─ skills/company-portfolio/
-   ├─ SKILL.md                전체 절차
-   └─ reference/schemas.md    brand.json · deck.json 스키마
+│  ├─ portfolio-reviewer.md   블라인드 면접관 리뷰 (덱)
+│  └─ resume-reviewer.md      블라인드 서류 심사관 리뷰 (이력서)
+└─ skills/
+   ├─ company-portfolio/
+   │  ├─ SKILL.md             덱 전체 절차
+   │  └─ reference/schemas.md brand.json · deck.json 스키마
+   └─ company-resume/
+      ├─ SKILL.md             이력서 절차 (조사·매칭은 company-portfolio 재사용)
+      └─ reference/resume-schema.md   personal.json · resume.json 스키마
 scripts/
 ├─ notion_export.py           공개 Notion 페이지 → Markdown + 이미지
 ├─ github_export.py           저장소·위키 클론, 내 커밋·문서·이미지 목록
-├─ check_facts.py             덱 수치 ↔ 사실 출처 대조
+├─ check_facts.py             덱·이력서 수치 ↔ 사실 출처 대조
 ├─ build_deck.js              brand.json + deck.json → PPTX
-└─ preview.sh                 PPTX → PNG (LibreOffice 또는 Keynote)
-profile/                      sources.json, notion_profile.md, supplements.md,
-                              team_notion.md, github/, assets/         (gitignore)
+├─ personal.py                이력서 인적사항·사진 입력 → profile/personal.json
+├─ build_resume.js            resume.json + personal.json → PDF (Chrome 헤드리스)
+├─ pdf2png.swift              PDF → PNG (macOS PDFKit, preview.sh가 컴파일)
+└─ preview.sh                 PPTX/PDF → PNG
+profile/                      sources.json, notion_profile.md, supplements.md, personal.json,
+                              photo.*, team_notion.md, github/, assets/   (gitignore)
 companies/<slug>/             research.md, brand.json, mapping.md,
-                              deck.json, assets/, review/              (gitignore)
-companies/_sample/            스키마 예시
-output/                       <slug>_portfolio.pptx, preview/          (gitignore)
+                              deck.json, resume.json, assets/, review/  (gitignore)
+companies/_sample/            스키마 예시 (deck.json, resume.json)
+output/                       <slug>_portfolio.pptx, <slug>_resume.pdf, preview/  (gitignore)
 ```
 
 개인 지원 자료(`profile/`, `companies/<기업>/`, `output/`)는 `.gitignore`로 제외한다.
@@ -249,6 +285,9 @@ output/                       <slug>_portfolio.pptx, preview/          (gitignor
 | `check_facts.py`가 `출처에 없음`을 출력 | 해당 문장을 출처 값으로 고친다. 계산값이면 `derived`에 근거를 적고, 새 사실이면 `supplements.md`에 출처와 함께 추가한다 |
 | Notion 내보내기가 비어 있음 | 페이지가 "웹에 게시" 상태인지 확인한다 |
 | Notion 내보내기가 `429 — 60s 후 재시도`를 반복 | 공개 페이지 API의 요청 제한이다. `--delay 3`으로 천천히 돌리고 기다린다. 팀 워크스페이스는 수십 분 걸릴 수 있다 |
+| `인적사항 미입력: …` (build_resume.js) | `python3 scripts/personal.py`로 입력한다. 빈칸 초안만 보려면 `--allow-missing` |
+| 이력서가 3쪽으로 넘침 | bullet을 줄이거나 관련 낮은 활동 행·기술 그룹을 뺀다. 1쪽 끝의 한두 줄만 넘어간 경우가 많다 |
+| `preview.sh`가 PDF에서 오래 멈춤 | 첫 실행은 PDF 변환기(`scripts/.bin/pdf2png`)를 컴파일한다(2~3분). `swiftc`가 없으면 `xcode-select --install` |
 | 한글이 단어 중간에서 줄바꿈됨 | Keynote는 한글을 글자 단위로 줄바꿈한다. 제목·헤드라인에는 `\n`을 직접 넣고(한 줄 18자 이내), 본문은 짧게 줄인다 |
 
 ## 참고

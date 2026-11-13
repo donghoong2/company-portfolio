@@ -13,7 +13,7 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 160
 target-version = "py310"
-include = ["scripts/*.py", "tests/*.py"]
+include = ["scripts/*.py", "tests/*.py", ".claude/hooks/*.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]

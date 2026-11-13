@@ -8,8 +8,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def load(name: str):
-    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
+def load(name: str, folder: str = "scripts"):
+    spec = importlib.util.spec_from_file_location(name, ROOT / folder / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
     spec.loader.exec_module(mod)
@@ -24,3 +24,13 @@ def check_facts():
 @pytest.fixture
 def personal():
     return load("personal")
+
+
+@pytest.fixture
+def check_style():
+    return load("check_style")
+
+
+@pytest.fixture
+def style_hook():
+    return load("style_check", ".claude/hooks")

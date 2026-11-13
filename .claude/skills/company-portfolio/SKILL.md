@@ -108,7 +108,8 @@ mapping.md를 쓰고 나서, 덱을 만들기 **전에** 사실 출처로 채울
 작성 규칙:
 - `project.contributions`에는 사실 출처의 담당 영역을 모두 남기고 관련도 순으로 정렬한다. 기업 맞춤은 순서와 상세 사례(`star`)로 하고, 기여 범위를 줄이지 않는다. 담당이 많으면 `architecture` 슬라이드로 "맡은 일 전체"를 따로 둔다.
 - 모든 `project`/`star`/`activities` 항목에 `fitTag(s)`로 연결된 인재상 키워드를 붙인다.
-- 한 슬라이드 = 한 메시지. 텍스트 박스당 2~4줄, bullet은 3~5개, 문장은 명사형/간결체.
+- 한 슬라이드 = 한 메시지. 텍스트 박스당 2~4줄, bullet은 3~5개.
+- **문장은 "~했습니다" 체로 끝맺는다** — 명사·수치로 끝나는 개조식, 풀지 않은 전문 용어(groundedness, freeze 등), 4개 이상 나열을 피한다. 기준과 고쳐 쓴 예: `reference/writing-style.md`. 라벨·기술 목록·수치 카드·표 칸은 명사로 둔다.
 - `cover.headline`, `closing.message`, `section.title`은 의미 단위로 `\n`을 직접 넣어 줄바꿈한다 (한 줄 한글 18자 이내). Keynote는 한글을 글자 단위로 줄바꿈하므로 자동 줄바꿈에 맡기면 단어가 잘린다.
 - 각 슬라이드 `notes`에 면접에서 말할 30초 설명을 넣는다.
 - 사실 출처의 수치를 계산해 만든 값(감소율, 배수 등)은 최상위 `derived`에 근거를 적는다: `{ "value": "42.2", "from": "52.6분 → 30.4분" }`. 근거 없는 계산값은 쓰지 않는다.
@@ -124,8 +125,11 @@ mapping.md를 쓰고 나서, 덱을 만들기 **전에** 사실 출처로 채울
 
 ```bash
 python3 scripts/check_facts.py companies/<slug>
+python3 scripts/check_style.py companies/<slug> --file deck.json   # 문장 스타일 (경고만)
 node scripts/build_deck.js companies/<slug>
 ```
+
+- `check_style.py` 경고는 빌드를 막지 않는다. 경고가 난 문장은 `reference/writing-style.md`대로 고치고(사실·수치는 그대로) `check_facts.py`를 다시 돌린다. 공고 원문 인용·고유명사처럼 고치면 안 되는 경고는 그대로 둔다. deck.json을 고치거나 빌드하면 프로젝트 훅(`.claude/hooks/style_check.py`)이 같은 검사를 자동으로 보여 준다.
 
 - `check_facts.py`가 `출처에 없음`을 내면 빌드하지 않는다. 해당 문장을 사실 출처의 값으로 고치거나, 계산값이면 `derived`에 근거를 적는다. 출처에 없는 값을 `derived`로 우회하지 않는다.
 - 이 검사는 숫자가 출처 어딘가에 있는지만 본다(작은 정수는 거의 항상 통과한다). 숫자가 맞는 맥락에 쓰였는지는 deck.json을 쓸 때 직접 확인한다.

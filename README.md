@@ -123,7 +123,8 @@ flowchart LR
     Q -->|보충 질문| P
     Q --> D[deck.json]
     D --> F[check_facts.py<br/>수치 검사]
-    F --> B[build_deck.js<br/>PPTX]
+    F --> S[check_style.py<br/>문장 스타일 경고]
+    S --> B[build_deck.js<br/>PPTX]
     R2 --> B
     B --> V[preview.sh<br/>PNG]
     V --> RV[portfolio-reviewer<br/>PNG + 공고만]
@@ -138,6 +139,7 @@ flowchart LR
 | 4. 보충 질문 | 메인 에이전트 ↔ 사용자 | `profile/supplements.md` |
 | 5. 덱 작성 | 메인 에이전트 | `deck.json` |
 | 6. 수치 검사 | `scripts/check_facts.py` | 통과 / 실패 목록 |
+| 6-1. 문장 스타일 (경고만) | `scripts/check_style.py`, 훅 `.claude/hooks/style_check.py` | 끝맺음·전문 용어·나열·길이 경고 |
 | 7. 렌더링 | `scripts/build_deck.js` (pptxgenjs) | `output/<slug>_portfolio.pptx` |
 | 8. 시각 검수 | `scripts/preview.sh` | `output/preview/<slug>_portfolio/*.png` |
 | 9. 면접관 리뷰 (최대 3회) | `portfolio-reviewer` 서브에이전트 | `review/reviewer-<n>.md`, `loop.md` |
@@ -224,7 +226,10 @@ bash scripts/preview.sh output/<slug>_resume.pdf
 ```bash
 python3 scripts/check_facts.py companies/<slug>                 # 수치 검사
 python3 scripts/check_facts.py companies/<slug> --find "<문장>"  # 문장이 몇 번 슬라이드에 있는지
+python3 scripts/check_style.py companies/<slug>                 # 문장 스타일 (경고만, --strict면 종료 코드 1)
 ```
+
+- **문장은 끝까지 맺는다.** 이력서는 "~했다", 덱은 "~했습니다" 체로 쓰고, 명사·수치로 끝나는 개조식과 풀지 않은 전문 용어(groundedness, freeze, generic plan 등)를 피한다. 기준과 고쳐 쓴 예는 [`writing-style.md`](.claude/skills/company-portfolio/reference/writing-style.md). `check_style.py`가 문장 필드만 골라 경고하고(라벨·기술 목록·수치 카드는 제외), 프로젝트 훅이 deck/resume.json을 고치거나 빌드할 때마다 같은 경고를 Claude에게 보여 준다. 빌드는 막지 않는다.
 
 > [!NOTE]
 > 수치 검사는 숫자가 출처 어딘가에 있는지만 본다. 0~50 같은 작은 정수는 거의 항상 통과하므로, 맥락이 맞는지는 리뷰어의 7번 기준(오류·모순)이 보완한다.
@@ -238,10 +243,14 @@ python3 scripts/check_facts.py companies/<slug> --find "<문장>"  # 문장이 �
 │  ├─ brand-researcher.md     브랜드 컬러·폰트·톤 조사
 │  ├─ portfolio-reviewer.md   블라인드 면접관 리뷰 (덱)
 │  └─ resume-reviewer.md      블라인드 서류 심사관 리뷰 (이력서)
+├─ hooks/style_check.py      deck/resume.json 수정·빌드 뒤 문장 스타일 경고 (PostToolUse)
+├─ settings.json             권한 · 훅 설정
 └─ skills/
    ├─ company-portfolio/
    │  ├─ SKILL.md             덱 전체 절차
-   │  └─ reference/schemas.md brand.json · deck.json 스키마
+   │  └─ reference/
+   │     ├─ schemas.md        brand.json · deck.json 스키마
+   │     └─ writing-style.md  문장 스타일 기준 (덱·이력서 공통)
    └─ company-resume/
       ├─ SKILL.md             이력서 절차 (조사·매칭은 company-portfolio 재사용)
       └─ reference/resume-schema.md   personal.json · resume.json 스키마
@@ -249,13 +258,14 @@ scripts/
 ├─ notion_export.py           공개 Notion 페이지 → Markdown + 이미지
 ├─ github_export.py           저장소·위키 클론, 내 커밋·문서·이미지 목록
 ├─ check_facts.py             덱·이력서 수치 ↔ 사실 출처 대조
+├─ check_style.py             덱·이력서 문장 스타일 경고 (끝맺음·용어·나열·길이)
 ├─ build_deck.js              brand.json + deck.json → PPTX
 ├─ personal.py                이력서 인적사항·사진 입력 → profile/personal.json
 ├─ build_resume.js            resume.json + personal.json → PDF (Chrome 헤드리스)
 ├─ build_resume_docx.js       resume.json + personal.json → 편집용 Word(.docx)
 ├─ pdf2png.swift              PDF → PNG (macOS PDFKit, preview.sh가 컴파일)
 └─ preview.sh                 PPTX/PDF → PNG
-tests/                        check_facts.py·personal.py 단위 테스트 (pytest)
+tests/                        check_facts.py·check_style.py·personal.py·훅 단위 테스트 (pytest)
 .github/workflows/ci.yml      ruff · pytest · 렌더 스모크
 profile/                      sources.json, notion_profile.md, supplements.md, personal.json,
                               photo.*, team_notion.md, github/, assets/   (gitignore)

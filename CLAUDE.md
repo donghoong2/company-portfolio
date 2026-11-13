@@ -31,6 +31,8 @@ output/preview/<name>/         검수용 PNG
 scripts/notion_export.py       공개 Notion 페이지 → Markdown (DB·하위 페이지·이미지 포함)
 scripts/github_export.py       GitHub 저장소·위키 클론, 내 커밋·문서·이미지 목록
 scripts/check_facts.py         deck.json·resume.json(--file) 수치 ↔ 사실 출처 대조 (빌드 전 필수)
+scripts/check_style.py         deck.json·resume.json 문장 스타일 경고 (끝맺음·전문 용어·나열·길이, 빌드는 막지 않음)
+.claude/hooks/style_check.py   deck/resume.json 수정·빌드 뒤 check_style.py 경고를 자동으로 보여 주는 PostToolUse 훅
 scripts/build_deck.js          brand.json + deck.json → PPTX (pptxgenjs)
 scripts/personal.py            이력서 인적사항·사진 입력 → profile/personal.json
 scripts/build_resume.js        resume.json + personal.json → PDF (Chrome 헤드리스)
@@ -43,6 +45,7 @@ scripts/preview.sh             PPTX/PDF → PNG
 
 - 지원자 경험·수치는 `profile/notion_profile.md`·`profile/supplements.md`에 있는 것만 쓴다. 과장·창작 금지, 팀 성과는 팀 성과로 표기. 빌드 전에 `check_facts.py`를 통과시킨다.
 - 팀 Notion·GitHub는 참고 자료다. 본인 기여는 사실 출처 또는 본인 커밋(`git log --author`)으로만 주장하고, 팀 문서·팀 수치는 팀 성과로 표기한다. 원본 서류 이미지 등 개인정보가 담긴 이미지는 쓰지 않는다.
+- 문장은 이력서 "~했다", 덱 "~했습니다" 체로 끝맺고 전문 용어는 풀어 쓴다 (`.claude/skills/company-portfolio/reference/writing-style.md`). `check_style.py` 경고는 사실·수치를 바꾸지 않고 문장만 고쳐 해결한다.
 - 덱 품질은 `portfolio-reviewer`, 이력서 품질은 `resume-reviewer`(PNG + 채용공고만 보는 블라인드 심사관)로 검증한다. 리뷰어에게 작성 의도나 매칭 분석을 넘기지 않는다.
 - 인적사항(사진·생년월일·주소·연락처)은 `profile/personal.json`·`profile/photo.*`에만 둔다. resume.json·supplements.md·커밋·PR·공개 저장소에 쓰지 않는다. 공개 저장소에는 입력·렌더 코드만 올린다.
 - 덱 디자인 변경은 `brand.json`(토큰)과 `deck.json`(내용)으로 해결하고, 새 레이아웃이 꼭 필요할 때만 `build_deck.js`에 slide 타입을 추가한다 (추가 시 `reference/schemas.md`도 갱신).

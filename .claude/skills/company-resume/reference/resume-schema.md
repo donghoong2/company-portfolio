@@ -69,6 +69,7 @@
 | — | 확인 문구·날짜·작성자 (자동) | — | |
 
 - 1쪽 = 인적사항 ~ 대외활동, 새 쪽부터 프로젝트 경험. 쪽 수 제한은 없다 — 분량은 내용으로 정하고, 한두 줄만 다음 쪽으로 넘어간 곳·빈 공간 과다만 정리한다.
+- 문장(`text.items`·`body`, `projects.bullets`)은 "~했다" 체로 끝맺는다. 용어·나열·길이 기준은 `.claude/skills/company-portfolio/reference/writing-style.md` (`scripts/check_style.py`가 경고).
 - 이력서의 프로젝트는 요약이다: 프로젝트마다 bullet 2~3개(주력도 4개 이하), 한 bullet 1~2줄. 원인 분석·대안 비교·수치 맥락 같은 상세는 포트폴리오에 둔다.
 - 기간은 `YYYY.MM ~ YYYY.MM`으로 통일하고, 진행 중이면 `YYYY.MM ~ 현재`. 표 행은 최근 것부터.
 - 가운뎃점은 글 안에서 띄우지 않는다(`Kubernetes·GitOps`). ` · `(띄움)는 렌더러가 기술 목록을 이을 때만 쓴다.

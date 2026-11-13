@@ -10,7 +10,23 @@
       "Bash(bash scripts/preview.sh:*)",
       "Bash(fc-list:*)",
       "Bash(curl -sL:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(python3 scripts/check_style.py:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/style_check.py\"",
+            "timeout": 30,
+            "statusMessage": "문장 스타일 검사"
+          }
+        ]
+      }
     ]
   }
 }

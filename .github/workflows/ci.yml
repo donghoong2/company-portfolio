@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - name: Ruff lint
-        run: uvx ruff check scripts tests
+        run: uvx ruff check scripts tests .claude/hooks
       - name: Pytest
         run: uv run --no-project --with pytest pytest -q
 

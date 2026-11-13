@@ -39,7 +39,7 @@ argument-hint: [기업명] [직무] [채용공고 URL]
 - **핵심 역량**: 1쪽 인적사항 아래 3줄. 프로젝트 bullet 중 가장 강한 성과를 기업 어휘로 요약한다(새 사실 금지).
 - **보유기술**: 4~7 그룹. 기업 기술 스택(research.md)과 겹치는 기술을 각 그룹 앞에. 프로젝트 bullet에서 쓴 근거가 보이는 기술만.
 - **프로젝트 경험**: 2~3개, 기업 관련도 순. 프로젝트마다 `period`·`team`(인원과 구성)·`role`을 반드시 쓴다.
-  - bullet은 **"무엇을 했나 — 어떻게 → 결과(수치)"** 한 문장. 가장 강한 성과를 첫 bullet에, 핵심 어구와 수치를 `**굵게**`.
+  - bullet은 **"무엇을 — 어떻게 해서 → 무엇이 달라졌다"**를 "~했다" 체 문장으로 끝맺는다(명사·수치로 끝내지 않는다). 가장 강한 성과를 첫 bullet에, 핵심 어구와 수치를 `**굵게**`. 전문 용어는 풀어 쓴다 — 기준: `.claude/skills/company-portfolio/reference/writing-style.md`.
   - **이력서는 요약이다**: 프로젝트마다 bullet 2~3개(주력도 4개 이하), 한 bullet 1~2줄. 원인 분석·대안 비교·측정 맥락 같은 상세는 포트폴리오에 두고 이력서에 덕지덕지 붙이지 않는다. 같은 기업 포트폴리오를 함께 내면 이력서 bullet은 포트폴리오 슬라이드 제목 수준으로 줄인다.
   - "구현", "적용"으로만 끝나는 bullet은 결과나 이유를 붙이거나 뺀다.
   - 역할 줄(`role`)에는 사실 출처의 담당 영역을 모두 남긴다 — 관련 업무를 bullet로 앞세우더라도 기여 범위를 줄이지 않는다.
@@ -52,11 +52,13 @@ argument-hint: [기업명] [직무] [채용공고 URL]
 
 ```bash
 python3 scripts/check_facts.py companies/<slug> --file resume.json
+python3 scripts/check_style.py companies/<slug> --file resume.json   # 문장 스타일 (경고만)
 node scripts/build_resume.js companies/<slug>        # 제출용 PDF
 node scripts/build_resume_docx.js companies/<slug>   # 편집용 Word(.docx)
 ```
 
 - `check_facts.py`가 `출처에 없음`을 내면 빌드하지 않는다(company-portfolio 4단계와 같은 규칙).
+- `check_style.py` 경고는 빌드를 막지 않는다. 경고가 난 문장을 "~했다" 체로 고치고(사실·수치는 그대로) `check_facts.py`를 다시 돌린다.
 - 인적사항 미입력으로 멈추면 0단계로 돌아간다. 사용자가 빈칸 초안을 원할 때만 `--allow-missing`.
 - 렌더러는 Chrome(또는 Chromium·Edge) 헤드리스로 인쇄한다. 없으면 설치를 안내한다.
 - 출력: `output/<slug>_resume.pdf`와 `output/<slug>_resume.docx` (개인정보 포함 — output/은 gitignore). 같은 resume.json에서 같은 양식으로 그린다. Word본은 표·글머리표·링크가 실제 요소라 Word·한컴오피스·Pages·Google Docs에서 고칠 수 있다(글꼴 한글 맑은 고딕·영문 Arial, `style.font`·`style.latinFont`로 바꿈). 사용자가 Word본을 직접 고쳤다면 그 파일이 최신이므로 다시 빌드해 덮어쓰기 전에 묻는다. 몇 쪽인지 출력한다(`meta.maxPages`를 지정했을 때만 넘으면 경고).
